@@ -7,40 +7,40 @@ public class Organization {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "org_id", updatable = false)
-    private long organization_id;
+    private long organizationId;
 
     @Column(name = "org_name", nullable = false)
-    private String organization_name;
+    private String organizationName;
 
     public Organization() {
     }
 
-    public Organization(long organization_id, String organization_name) {
-        this.organization_id = organization_id;
-        this.organization_name = organization_name;
+    public Organization(long organizationId, String organizationName) {
+        this.organizationId = organizationId;
+        this.organizationName = organizationName;
     }
 
     public long getOrganization_id() {
-        return organization_id;
+        return organizationId;
     }
 
-    public void setOrganization_id(long organization_id) {
-        this.organization_id = organization_id;
+    public void setOrganization_id(long organizationId) {
+        this.organizationId = organizationId;
     }
 
     public String getOrganization_name() {
-        return organization_name;
+        return organizationName;
     }
 
-    public void setOrganization_name(String organization_name) {
-        this.organization_name = organization_name;
+    public void setOrganization_name(String organizationName) {
+        this.organizationName = organizationName;
     }
 
     @Override
     public String toString() {
         return "Organization{" +
-                "organization_id=" + organization_id +
-                ", organization_name='" + organization_name + '\'' +
+                "organizationId=" + organizationId +
+                ", organizationName='" + organizationName + '\'' +
                 '}';
     }
 }

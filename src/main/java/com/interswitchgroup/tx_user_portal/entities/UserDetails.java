@@ -16,6 +16,9 @@ public class UserDetails {
     @Column(name = "user_department")
     private String department;
 
+    @Column(name = "office_number")
+    private String officeNumber;
+
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
@@ -33,11 +36,11 @@ public class UserDetails {
     public UserDetails() {
     }
 
-    public UserDetails(Long user_details_id, String designation, String department, User user, Organization organization, LocalDateTime dateCreated, LocalDateTime dateUpdated) {
-        this.user_details_id = user_details_id;
+    public UserDetails(String designation, String department, User user, String officeNumber, Organization organization, LocalDateTime dateCreated, LocalDateTime dateUpdated) {
         this.designation = designation;
         this.department = department;
         this.user = user;
+        this.officeNumber = officeNumber;
         this.organization = organization;
         this.dateCreated = dateCreated;
         this.dateUpdated = dateUpdated;
@@ -97,5 +100,13 @@ public class UserDetails {
 
     public void setDateUpdated(LocalDateTime dateUpdated) {
         this.dateUpdated = dateUpdated;
+    }
+
+    public String getOfficeNumber() {
+        return officeNumber;
+    }
+
+    public void setOfficeNumber(String officeNumber) {
+        this.officeNumber = officeNumber;
     }
 }

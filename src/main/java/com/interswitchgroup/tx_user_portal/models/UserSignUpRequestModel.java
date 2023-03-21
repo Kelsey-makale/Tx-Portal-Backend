@@ -6,13 +6,21 @@ public class UserSignUpRequestModel {
     private String email_address;
     private String phone_number;
     private String password;
+    private int organization_id;
+    private String designation;
+    private String department;
+    private String office_number;
 
-    public UserSignUpRequestModel(String first_name, String second_name, String email_address, String phone_number, String password) {
+    public UserSignUpRequestModel(String first_name, String second_name, String email_address, String phone_number, String password, int organization_id, String designation, String department, String office_number) {
         this.first_name = first_name;
         this.second_name = second_name;
         this.email_address = email_address;
         this.phone_number = phone_number;
         this.password = password;
+        this.organization_id = organization_id;
+        this.designation = designation;
+        this.department = department;
+        this.office_number = office_number;
     }
 
     public String getFirst_name() {
@@ -53,5 +61,37 @@ public class UserSignUpRequestModel {
 
     public void setPassword(String password) {
         this.password = password;
+    }
+
+    public int getOrganization_id() {
+        return organization_id;
+    }
+
+    public void setOrganization_id(int organization_id) {
+        this.organization_id = organization_id;
+    }
+
+    public String getDesignation() {
+        return designation;
+    }
+
+    public void setDesignation(String designation) {
+        this.designation = designation;
+    }
+
+    public String getDepartment() {
+        return department;
+    }
+
+    public void setDepartment(String department) {
+        this.department = department;
+    }
+
+    public String getOffice_number() {
+        return office_number;
+    }
+
+    public void setOffice_number(String office_number) {
+        this.office_number = office_number;
     }
 }

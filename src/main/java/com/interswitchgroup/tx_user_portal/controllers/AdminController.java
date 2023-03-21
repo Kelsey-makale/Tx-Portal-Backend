@@ -1,8 +1,5 @@
 package com.interswitchgroup.tx_user_portal.controllers;
 
-import com.interswitchgroup.tx_user_portal.models.ResendOTPRequestModel;
-import com.interswitchgroup.tx_user_portal.models.UserSignUpRequestModel;
-import com.interswitchgroup.tx_user_portal.models.UserVerifyRequestModel;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -11,19 +8,9 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping(path = "api/v1/admin")
 public class AdminController {
 
-    @PostMapping("/signIn")
-    public ResponseEntity<String> signUp(@RequestBody UserSignUpRequestModel userSignUpRequestModel){
-        return new ResponseEntity<>("User Created Successfully", HttpStatus.CREATED);
-    }
-
-    @PostMapping("/resend-otp")
-    public ResponseEntity<String> resendOTP(@RequestBody ResendOTPRequestModel resendOTPRequestModel){
-        return new ResponseEntity<>("OTP sent Successfully", HttpStatus.OK);
-    }
-
-    @PostMapping("/verify")
-    public ResponseEntity<String> verifyEmail(@RequestBody UserVerifyRequestModel userVerifyRequestModel){
-        return new ResponseEntity<>("Email Verified Successfully", HttpStatus.OK);
+    @PutMapping("/update-request/{request_id}/{request_status}")
+    public ResponseEntity<String> updateRequest(@PathVariable long request_id, @PathVariable String request_status){
+        return new ResponseEntity<>("Request updated successfully", HttpStatus.OK);
     }
 
     @GetMapping("/pending-requests")

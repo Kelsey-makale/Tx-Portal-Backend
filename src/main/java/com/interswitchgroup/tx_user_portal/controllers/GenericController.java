@@ -48,7 +48,7 @@ public class GenericController {
         return new ResponseEntity<>(genericService.getOrganizationAndRoleData(), HttpStatus.OK);
     }
 
-    @PostMapping("/make-request")
+    @PostMapping("/request")
     public ResponseEntity<String> makePermissionRequest(@RequestBody UserRoleRequestModel requestModel){
         genericService.makeRequest(requestModel);
         return new ResponseEntity<>("Request logged successfully", HttpStatus.OK);

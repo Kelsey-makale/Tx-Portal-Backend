@@ -13,6 +13,7 @@ import java.util.*;
 @Service
 public class GenericService {
     private final UserRepository userRepository;
+    private final UserDetailsRepository userDetailsRepository;
     private final OrganizationRepository organizationRepository;
     private final RoleRepository roleRepository;
     private final UserVerificationRepository userVerificationRepository;
@@ -23,8 +24,9 @@ public class GenericService {
     PasswordEncoder passwordEncoder;
 
     @Autowired
-    public GenericService(UserRepository userRepository, OrganizationRepository organizationRepository, RoleRepository roleRepository, UserVerificationRepository userVerificationRepository, RequestRepository requestRepository, EmailService emailService) {
+    public GenericService(UserRepository userRepository, UserDetailsRepository userDetailsRepository,  OrganizationRepository organizationRepository, RoleRepository roleRepository, UserVerificationRepository userVerificationRepository, RequestRepository requestRepository, EmailService emailService) {
         this.userRepository = userRepository;
+        this.userDetailsRepository = userDetailsRepository;
         this.organizationRepository = organizationRepository;
         this.roleRepository = roleRepository;
         this.userVerificationRepository = userVerificationRepository;
@@ -35,14 +37,20 @@ public class GenericService {
 
     public String createUser(UserSignUpRequestModel userSignUpRequestModel){
         //1. Add user to database and return userID
+
         //check if they exist on the db first
         Optional<User> userOptional = userRepository.findUserByEmailAddress(userSignUpRequestModel.getEmail_address());
-        User created_user;
+        Optional<Organization> organizationOptional = organizationRepository.findByOrganizationId(userSignUpRequestModel.getOrganization_id());
+
 
         if(userOptional.isPresent()){
             System.out.println("USER ALREADY EXISTS");
-            return userOptional.map(user -> String.valueOf(user.getUser_id())).orElse("Exists");
-        } else{
+            throw new IllegalArgumentException("A user with this email already exists: " + userSignUpRequestModel.getEmail_address());
+        }
+        else if(organizationOptional.isEmpty()){
+            throw new IllegalArgumentException("Organization not found: " + userSignUpRequestModel.getOrganization_id());
+        }
+        else{
             String encPass = passwordEncoder.encode(userSignUpRequestModel.getPassword());
             User newUser = new User(
                     userSignUpRequestModel.getFirst_name(),
@@ -54,14 +62,29 @@ public class GenericService {
                     LocalDateTime.now()
             );
 
-            created_user =  userRepository.save(newUser);
+            User created_user =  userRepository.save(newUser);
             System.out.println("CREATED USER'S ID::" + created_user.getUser_id());
+
+
+            //2.a Add user details to db
+            UserDetails newUserDetails = new UserDetails(
+                    userSignUpRequestModel.getDesignation(),
+                    userSignUpRequestModel.getDepartment(),
+                    created_user,
+                    userSignUpRequestModel.getOffice_number(),
+                    organizationOptional.get(),
+                    LocalDateTime.now(),
+                    LocalDateTime.now());
+
+            userDetailsRepository.save(newUserDetails);
 
             //3. Generate OTP
             String my_otp = generateOTP(created_user.getUser_id());
 
-            //4. Send user email containing the OTP
-           // emailService.sendMail(userSignUpRequestModel.getEmail_address(), "Verify Account", "Your OTP is" + my_otp);
+            /*
+            4. Send user email containing the OTP
+            emailService.sendMail(userSignUpRequestModel.getEmail_address(), "Verify Account", "Your OTP is" + my_otp);
+             */
 
             return created_user.getUser_id().toString();
 
@@ -115,6 +138,7 @@ public class GenericService {
     }
 
     public void makeRequest(UserRoleRequestModel requestModel){
+        //todo: figure out how to handle duplicates.
         Optional<User> userOptional = userRepository.findUserByUserId(requestModel.getUserId());
         User user = userOptional.orElseThrow(() -> new IllegalArgumentException("User not found: " + requestModel.getUserId()));
 
