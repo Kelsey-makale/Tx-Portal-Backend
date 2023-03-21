@@ -15,6 +15,7 @@ import java.util.Map;
 @RestController
 @RequestMapping(path = "api/v1")
 public class GenericController {
+
     private final GenericService genericService;
     @Autowired
     public GenericController(GenericService genericService) {

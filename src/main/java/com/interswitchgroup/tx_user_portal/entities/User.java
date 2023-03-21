@@ -1,6 +1,7 @@
 package com.interswitchgroup.tx_user_portal.entities;
 
 import jakarta.persistence.*;
+import org.hibernate.engine.internal.Cascade;
 
 import java.time.LocalDateTime;
 
@@ -10,20 +11,8 @@ public class User {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long userId;
 
-    @Column(name = "first_name")
-    private String firstName;
-
-    @Column(name = "second_name")
-    private String secondName;
-
     @Column(name = "email_address")
     private String emailAddress;
-
-    @Column(name = "phone_number")
-    private String phoneNumber;
-
-    @Column(name = "is_verified", columnDefinition = "boolean default false")
-    private boolean isVerified;
 
     @Column(name = "permission")
     private String permission;
@@ -37,18 +26,16 @@ public class User {
     @Column(name = "date_updated")
     private LocalDateTime dateUpdated;
 
-    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToOne(cascade = CascadeType.ALL)
+    @JoinColumn(name = "user_details_id")
     private UserDetails userDetails;
 
 
     public User() {
     }
 
-    public User( String firstName, String secondName, String emailAddress, String phoneNumber, String password, LocalDateTime dateCreated, LocalDateTime dateUpdated) {
-        this.firstName = firstName;
-        this.secondName = secondName;
+    public User(String emailAddress, String password, LocalDateTime dateCreated, LocalDateTime dateUpdated) {
         this.emailAddress = emailAddress;
-        this.phoneNumber = phoneNumber;
         this.password = password;
         this.dateCreated = dateCreated;
         this.dateUpdated = dateUpdated;
@@ -62,22 +49,6 @@ public class User {
         this.userId = userId;
     }
 
-    public String getFirstName() {
-        return firstName;
-    }
-
-    public void setFirstName(String firstName) {
-        this.firstName = firstName;
-    }
-
-    public String getSecondName() {
-        return secondName;
-    }
-
-    public void setSecondName(String secondName) {
-        this.secondName = secondName;
-    }
-
     public String getEmailAddress() {
         return emailAddress;
     }
@@ -86,28 +57,12 @@ public class User {
         this.emailAddress = emailAddress;
     }
 
-    public String getPhoneNumber() {
-        return phoneNumber;
-    }
-
-    public void setPhoneNumber(String phoneNumber) {
-        this.phoneNumber = phoneNumber;
-    }
-
-    public boolean isVerified() {
-        return isVerified;
-    }
-
     public String getPermission() {
         return permission;
     }
 
     public void setPermission(String permission) {
         this.permission = permission;
-    }
-
-    public void setVerified(boolean verified) {
-        isVerified = verified;
     }
 
     public String getPassword() {
@@ -132,5 +87,13 @@ public class User {
 
     public void setDateUpdated(LocalDateTime dateUpdated) {
         this.dateUpdated = dateUpdated;
+    }
+
+    public UserDetails getUserDetails() {
+        return userDetails;
+    }
+
+    public void setUserDetails(UserDetails userDetails) {
+        this.userDetails = userDetails;
     }
 }

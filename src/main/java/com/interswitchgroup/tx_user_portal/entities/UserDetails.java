@@ -10,6 +10,15 @@ public class UserDetails {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long user_details_id;
 
+    @Column(name = "first_name")
+    private String firstName;
+
+    @Column(name = "second_name")
+    private String secondName;
+
+    @Column(name = "phone_number")
+    private String phoneNumber;
+
     @Column(name = "user_designation")
     private String designation;
 
@@ -19,11 +28,10 @@ public class UserDetails {
     @Column(name = "office_number")
     private String officeNumber;
 
-    @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id", nullable = false)
-    private User user;
+    @Column(name = "is_verified", columnDefinition = "boolean default false")
+    private boolean isVerified;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "organization_id", nullable = false)
     private Organization organization;
 
@@ -36,10 +44,12 @@ public class UserDetails {
     public UserDetails() {
     }
 
-    public UserDetails(String designation, String department, User user, String officeNumber, Organization organization, LocalDateTime dateCreated, LocalDateTime dateUpdated) {
+    public UserDetails(String firstName, String secondName, String phoneNumber, String designation, String department, String officeNumber, Organization organization, LocalDateTime dateCreated, LocalDateTime dateUpdated) {
+        this.firstName = firstName;
+        this.secondName = secondName;
+        this.phoneNumber = phoneNumber;
         this.designation = designation;
         this.department = department;
-        this.user = user;
         this.officeNumber = officeNumber;
         this.organization = organization;
         this.dateCreated = dateCreated;
@@ -68,14 +78,6 @@ public class UserDetails {
 
     public void setDepartment(String department) {
         this.department = department;
-    }
-
-    public User getUser() {
-        return user;
-    }
-
-    public void setUser(User user) {
-        this.user = user;
     }
 
     public Organization getOrganization() {
@@ -109,4 +111,6 @@ public class UserDetails {
     public void setOfficeNumber(String officeNumber) {
         this.officeNumber = officeNumber;
     }
+
+
 }

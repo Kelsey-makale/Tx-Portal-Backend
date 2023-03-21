@@ -52,31 +52,29 @@ public class GenericService {
         }
         else{
             String encPass = passwordEncoder.encode(userSignUpRequestModel.getPassword());
+
             User newUser = new User(
-                    userSignUpRequestModel.getFirst_name(),
-                    userSignUpRequestModel.getSecond_name(),
                     userSignUpRequestModel.getEmail_address(),
-                    userSignUpRequestModel.getPhone_number(),
                     encPass,
                     LocalDateTime.now(),
                     LocalDateTime.now()
             );
 
-            User created_user =  userRepository.save(newUser);
-            System.out.println("CREATED USER'S ID::" + created_user.getUser_id());
-
 
             //2.a Add user details to db
             UserDetails newUserDetails = new UserDetails(
+                    userSignUpRequestModel.getFirst_name(),
+                    userSignUpRequestModel.getSecond_name(),
+                    userSignUpRequestModel.getPhone_number(),
                     userSignUpRequestModel.getDesignation(),
                     userSignUpRequestModel.getDepartment(),
-                    created_user,
                     userSignUpRequestModel.getOffice_number(),
                     organizationOptional.get(),
                     LocalDateTime.now(),
                     LocalDateTime.now());
 
-            userDetailsRepository.save(newUserDetails);
+            newUser.setUserDetails(newUserDetails);
+            User created_user =  userRepository.save(newUser);
 
             //3. Generate OTP
             String my_otp = generateOTP(created_user.getUser_id());
