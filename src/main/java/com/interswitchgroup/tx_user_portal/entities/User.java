@@ -1,7 +1,7 @@
 package com.interswitchgroup.tx_user_portal.entities;
 
+import com.interswitchgroup.tx_user_portal.utils.Enums.UserPermission;
 import jakarta.persistence.*;
-import org.hibernate.engine.internal.Cascade;
 
 import java.time.LocalDateTime;
 
@@ -14,8 +14,8 @@ public class User {
     @Column(name = "email_address")
     private String emailAddress;
 
-    @Column(name = "permission")
-    private String permission;
+    @Enumerated(EnumType.STRING)
+    private UserPermission permission;
 
     @Column(name = "user_password")
     private String password;
@@ -34,9 +34,10 @@ public class User {
     public User() {
     }
 
-    public User(String emailAddress, String password, LocalDateTime dateCreated, LocalDateTime dateUpdated) {
+    public User(String emailAddress, String password, UserPermission userPermission, LocalDateTime dateCreated, LocalDateTime dateUpdated) {
         this.emailAddress = emailAddress;
         this.password = password;
+        this.permission = userPermission;
         this.dateCreated = dateCreated;
         this.dateUpdated = dateUpdated;
     }
@@ -57,11 +58,11 @@ public class User {
         this.emailAddress = emailAddress;
     }
 
-    public String getPermission() {
+    public UserPermission getPermission() {
         return permission;
     }
 
-    public void setPermission(String permission) {
+    public void setPermission(UserPermission permission) {
         this.permission = permission;
     }
 

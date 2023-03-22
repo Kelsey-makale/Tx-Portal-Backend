@@ -4,6 +4,7 @@ import com.interswitchgroup.tx_user_portal.entities.*;
 import com.interswitchgroup.tx_user_portal.models.*;
 import com.interswitchgroup.tx_user_portal.repositories.*;
 import com.interswitchgroup.tx_user_portal.utils.Enums.RequestStatus;
+import com.interswitchgroup.tx_user_portal.utils.Enums.UserPermission;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -57,6 +58,7 @@ public class GenericService {
             User newUser = new User(
                     userSignUpRequestModel.getEmail_address(),
                     encPass,
+                    UserPermission.BANK_USER,
                     LocalDateTime.now(),
                     LocalDateTime.now()
             );

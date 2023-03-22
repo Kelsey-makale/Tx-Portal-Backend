@@ -15,24 +15,21 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
-
 @Service
-public class AdminService {
+public class SuperAdminService {
     private final RequestRepository requestRepository;
     private final UserRepository userRepository;
     private final UserDetailsRepository userDetailsRepository;
     private final RoleRepository roleRepository;
 
     @Autowired
-    public AdminService(RequestRepository requestRepository, UserRepository userRepository, UserDetailsRepository userDetailsRepository, RoleRepository roleRepository) {
+    public SuperAdminService(RequestRepository requestRepository, UserRepository userRepository, UserDetailsRepository userDetailsRepository, RoleRepository roleRepository) {
         this.requestRepository = requestRepository;
         this.userRepository = userRepository;
         this.userDetailsRepository = userDetailsRepository;
         this.roleRepository = roleRepository;
     }
+
 
     public Page<Request> getAllPendingRequests(int pageNumber, int pageSize) {
         Pageable pageable = PageRequest.of(pageNumber, pageSize);
@@ -40,8 +37,8 @@ public class AdminService {
     }
 
     /**
-      This method returns a JPA Specification that is used to eagerly
-      fetch the associated user and role entities for each request
+     This method returns a JPA Specification that is used to eagerly
+     fetch the associated user and role entities for each request
      **/
     private static Specification<Request> fetchRolesAndUser() {
         return (root, query, builder) -> {
@@ -63,20 +60,10 @@ public class AdminService {
     }
 
 
-    public Map<String, Object> getSpecificUser(long user_id){
-
-        Optional<User> userOptional = userRepository.findUserByUserId(user_id);
-        User user = userOptional.get();
-
-        Map<String, Object> response = new HashMap<>();
-        response.put("data", user);
-        return response;
-
-    }
-
     public Page<User> getAllUsers(int pageNumber, int pageSize) {
         Pageable paging = PageRequest.of(pageNumber, pageSize);
         Page<User> pagedResult = userRepository.findAll(paging);
         return pagedResult;
     }
+
 }
