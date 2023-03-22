@@ -24,9 +24,9 @@ public class AdminController {
         this.adminService = adminService;
     }
 
-
     @PutMapping("/update-request/{request_id}/{request_status}")
     public ResponseEntity<String> updateRequest(@PathVariable long request_id, @PathVariable String request_status){
+        adminService.UpdateRequestStatus(request_id, request_status);
         return new ResponseEntity<>("Request updated successfully", HttpStatus.OK);
     }
 

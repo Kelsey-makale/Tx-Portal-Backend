@@ -44,7 +44,6 @@ public class GenericService {
         Optional<User> userOptional = userRepository.findUserByEmailAddress(userSignUpRequestModel.getEmail_address());
         Optional<Organization> organizationOptional = organizationRepository.findByOrganizationId(userSignUpRequestModel.getOrganization_id());
 
-
         if(userOptional.isPresent()){
             System.out.println("USER ALREADY EXISTS");
             throw new IllegalArgumentException("A user with this email already exists: " + userSignUpRequestModel.getEmail_address());
@@ -54,10 +53,11 @@ public class GenericService {
         }
         else{
             String encPass = passwordEncoder.encode(userSignUpRequestModel.getPassword());
-
+            List<Integer> my_roles = new ArrayList<>();
             User newUser = new User(
                     userSignUpRequestModel.getEmail_address(),
                     encPass,
+                    my_roles,
                     UserPermission.BANK_USER,
                     LocalDateTime.now(),
                     LocalDateTime.now()

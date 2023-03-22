@@ -4,6 +4,7 @@ import com.interswitchgroup.tx_user_portal.utils.Enums.UserPermission;
 import jakarta.persistence.*;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Entity
 public class User {
@@ -30,13 +31,19 @@ public class User {
     @JoinColumn(name = "user_details_id")
     private UserDetails userDetails;
 
+    @ElementCollection
+    @CollectionTable(name = "user_roles", joinColumns = @JoinColumn(name = "user_id"))
+    @Column(name = "role_id")
+    private List<Integer> roleIds;
+
 
     public User() {
     }
 
-    public User(String emailAddress, String password, UserPermission userPermission, LocalDateTime dateCreated, LocalDateTime dateUpdated) {
+    public User(String emailAddress, String password,List<Integer> roles, UserPermission userPermission, LocalDateTime dateCreated, LocalDateTime dateUpdated) {
         this.emailAddress = emailAddress;
         this.password = password;
+        this.roleIds = roles;
         this.permission = userPermission;
         this.dateCreated = dateCreated;
         this.dateUpdated = dateUpdated;
@@ -96,5 +103,13 @@ public class User {
 
     public void setUserDetails(UserDetails userDetails) {
         this.userDetails = userDetails;
+    }
+
+    public List<Integer> getRoleIds() {
+        return roleIds;
+    }
+
+    public void setRoleIds(List<Integer> roleIds) {
+        this.roleIds = roleIds;
     }
 }

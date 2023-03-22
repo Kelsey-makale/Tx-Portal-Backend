@@ -4,15 +4,13 @@ import com.interswitchgroup.tx_user_portal.utils.Enums.RequestStatus;
 import jakarta.persistence.*;
 
 import java.time.LocalDateTime;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 @Entity
 public class Request {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private long request_id;
+    private long requestId;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
@@ -44,11 +42,11 @@ public class Request {
     }
 
     public long getRequest_id() {
-        return request_id;
+        return requestId;
     }
 
     public void setRequest_id(long request_id) {
-        this.request_id = request_id;
+        this.requestId = request_id;
     }
 
     public User getUser() {

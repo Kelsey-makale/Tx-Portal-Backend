@@ -15,7 +15,9 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
@@ -62,7 +64,6 @@ public class AdminService {
         return (root, query, builder) -> builder.equal(root.get("requestStatus"), RequestStatus.PENDING);
     }
 
-
     public Map<String, Object> getSpecificUser(long user_id){
 
         Optional<User> userOptional = userRepository.findUserByUserId(user_id);
@@ -78,5 +79,43 @@ public class AdminService {
         Pageable paging = PageRequest.of(pageNumber, pageSize);
         Page<User> pagedResult = userRepository.findAll(paging);
         return pagedResult;
+    }
+
+    public void UpdateRequestStatus(long requestId, String request_status){
+        //check if that request exists on the db
+        Optional<Request> requestOptional = requestRepository.findRequestByRequestId(requestId);
+
+        if(requestOptional.isEmpty()){
+            throw new IllegalArgumentException("Request not found: " + requestId);
+        }
+        else{
+            Request foundRequest = requestOptional.get();
+            if(request_status.equals(RequestStatus.APPROVED.name())){
+
+                foundRequest.setRequestStatus(RequestStatus.APPROVED);
+                foundRequest.setDateUpdated(LocalDateTime.now());
+
+                //update users roles as well
+                List<Integer> requested_roles = foundRequest.getRoleIds();
+                User requestUser = foundRequest.getUser();
+                List<Integer> users_current_roles = requestUser.getRoleIds();
+
+                //avoiding repetition
+                if(!users_current_roles.contains(requested_roles)){
+                    users_current_roles.addAll(requested_roles);
+                }
+                //save those users roles
+                requestUser.setRoleIds(users_current_roles);
+            }
+            else if(request_status.equals(RequestStatus.REJECTED.name())){
+                foundRequest.setRequestStatus(RequestStatus.REJECTED);
+                foundRequest.setDateUpdated(LocalDateTime.now());
+            }
+            else{
+                throw new IllegalArgumentException("REQUEST VALUE PASSED IS INCORRECT " + request_status);
+            }
+            requestRepository.save(foundRequest);
+        }
+
     }
 }
