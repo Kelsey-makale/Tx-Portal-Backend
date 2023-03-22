@@ -3,6 +3,7 @@ package com.interswitchgroup.tx_user_portal.services;
 import com.interswitchgroup.tx_user_portal.entities.*;
 import com.interswitchgroup.tx_user_portal.models.*;
 import com.interswitchgroup.tx_user_portal.repositories.*;
+import com.interswitchgroup.tx_user_portal.utils.Enums.RequestStatus;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -143,7 +144,7 @@ public class GenericService {
         Request newRequest = new Request(
                 user,
                 requestModel.getRoleIds(),
-                "PENDING",
+                RequestStatus.PENDING,
                 LocalDateTime.now(),
                 LocalDateTime.now()
         );

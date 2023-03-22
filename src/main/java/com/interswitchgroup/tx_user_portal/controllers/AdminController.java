@@ -1,5 +1,6 @@
 package com.interswitchgroup.tx_user_portal.controllers;
 
+import com.interswitchgroup.tx_user_portal.entities.Request;
 import com.interswitchgroup.tx_user_portal.entities.User;
 import com.interswitchgroup.tx_user_portal.entities.UserDetails;
 import com.interswitchgroup.tx_user_portal.services.AdminService;
@@ -30,8 +31,9 @@ public class AdminController {
     }
 
     @GetMapping("/pending-requests")
-    public ResponseEntity<String> getPendingRequests(){
-        return new ResponseEntity<>("Fetched Successfully", HttpStatus.OK);
+    public ResponseEntity<Page<Request>> getPendingRequests(@RequestParam(defaultValue = "0") int pageNumber, @RequestParam(defaultValue = "10") int pageSize){
+        Page<Request> allRequests = adminService.getAllPendingRequests(pageNumber, pageSize);
+        return new ResponseEntity<>(allRequests, HttpStatus.OK);
     }
 
     @GetMapping("/user")

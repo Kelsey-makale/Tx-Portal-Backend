@@ -1,5 +1,6 @@
 package com.interswitchgroup.tx_user_portal.entities;
 
+import com.interswitchgroup.tx_user_portal.utils.Enums.RequestStatus;
 import jakarta.persistence.*;
 
 import java.time.LocalDateTime;
@@ -22,8 +23,8 @@ public class Request {
     @Column(name = "role_id")
     private List<Integer> roleIds;
 
-    @Column(name = "request_status")
-    private String requestStatus;
+    @Enumerated(EnumType.STRING)
+    private RequestStatus requestStatus;
 
     @Column(name = "date_created")
     private LocalDateTime dateCreated;
@@ -34,7 +35,7 @@ public class Request {
     public Request() {
     }
 
-    public Request(User user, List<Integer> roles, String requestStatus, LocalDateTime dateCreated, LocalDateTime dateUpdated) {
+    public Request(User user, List<Integer> roles, RequestStatus requestStatus, LocalDateTime dateCreated, LocalDateTime dateUpdated) {
         this.user = user;
         this.roleIds = roles;
         this.requestStatus = requestStatus;
@@ -66,11 +67,11 @@ public class Request {
         this.roleIds = roleIds;
     }
 
-    public String getRequestStatus() {
+    public RequestStatus getRequestStatus() {
         return requestStatus;
     }
 
-    public void setRequestStatus(String requestStatus) {
+    public void setRequestStatus(RequestStatus requestStatus) {
         this.requestStatus = requestStatus;
     }
 
