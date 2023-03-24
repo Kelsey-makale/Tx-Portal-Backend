@@ -318,27 +318,43 @@ public class GenericService {
         return responseModel;
     }
 
-    public void makeRequest(UserRoleRequestModel requestModel){
+    public UserResponseModel makeRequest(UserRoleRequestModel requestModel){
         //todo: figure out how to handle duplicates.
         //todo: handle when the user is blocked
+        //todo: send email to info_sec and bank admin
+
+        UserResponseModel responseModel;
+        Map<String, Object> responseBody = new HashMap<>();
 
         try{
+            Optional<User> userOptional = userRepository.findUserByUserId(requestModel.getUserId());
+            User user = userOptional.orElseThrow(() -> new IllegalArgumentException("User not found: " + requestModel.getUserId()));
+
+            Request newRequest = new Request(
+                    user,
+                    requestModel.getRoleIds(),
+                    RequestStatus.PENDING,
+                    LocalDateTime.now(),
+                    LocalDateTime.now()
+            );
+
+            requestRepository.save(newRequest);
+
+            responseModel = new UserResponseModel(
+                    HttpStatus.OK.value(),
+                    "OTP sent successfully."
+            );
+
 
         }catch(IllegalArgumentException e){
-
+            responseBody.put("error", e.getMessage());
+            responseModel = new UserResponseModel(
+                    HttpStatus.EXPECTATION_FAILED.value(),
+                    "Failed to resend OTP",
+                    Optional.of(responseBody)
+            );
         }
-        Optional<User> userOptional = userRepository.findUserByUserId(requestModel.getUserId());
-        User user = userOptional.orElseThrow(() -> new IllegalArgumentException("User not found: " + requestModel.getUserId()));
-
-        Request newRequest = new Request(
-                user,
-                requestModel.getRoleIds(),
-                RequestStatus.PENDING,
-                LocalDateTime.now(),
-                LocalDateTime.now()
-        );
-
-        requestRepository.save(newRequest);
+       return responseModel;
     }
 
 }

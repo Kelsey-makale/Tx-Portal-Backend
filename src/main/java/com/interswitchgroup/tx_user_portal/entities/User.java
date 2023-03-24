@@ -145,4 +145,13 @@ public class User implements org.springframework.security.core.userdetails.UserD
     public void setRoleIds(List<Integer> roleIds) {
         this.roleIds = roleIds;
     }
+
+    @Override
+    public String toString() {
+        return "User{" +
+                "emailAddress='" + emailAddress + '\'' +
+                ", permission=" + permission +
+                ", userDetails=" + userDetails +
+                '}';
+    }
 }

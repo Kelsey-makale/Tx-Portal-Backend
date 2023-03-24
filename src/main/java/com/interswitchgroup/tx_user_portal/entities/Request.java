@@ -12,11 +12,12 @@ public class Request {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long requestId;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @OneToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "user_id")
     private User user;
 
-    //todo: Link to Organization table.
+    @Column(name = "approver_id")
+    private long approver_id;
 
     @ElementCollection
     @CollectionTable(name = "request_roles", joinColumns = @JoinColumn(name = "request_id"))
@@ -32,10 +33,11 @@ public class Request {
     @Column(name = "date_updated")
     private LocalDateTime dateUpdated;
 
+
     public Request() {
     }
 
-    public Request(User user, List<Integer> roles, RequestStatus requestStatus, LocalDateTime dateCreated, LocalDateTime dateUpdated) {
+    public Request( User user, List<Integer> roles, RequestStatus requestStatus, LocalDateTime dateCreated, LocalDateTime dateUpdated) {
         this.user = user;
         this.roleIds = roles;
         this.requestStatus = requestStatus;
@@ -89,5 +91,13 @@ public class Request {
 
     public void setDateUpdated(LocalDateTime dateUpdated) {
         this.dateUpdated = dateUpdated;
+    }
+
+    public long getApprover_id() {
+        return approver_id;
+    }
+
+    public void setApprover_id(long approver_id) {
+        this.approver_id = approver_id;
     }
 }

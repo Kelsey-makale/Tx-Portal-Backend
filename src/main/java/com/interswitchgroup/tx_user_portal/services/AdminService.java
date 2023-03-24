@@ -13,6 +13,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -37,8 +38,13 @@ public class AdminService {
     }
 
     public Page<Request> getAllPendingRequests(int pageNumber, int pageSize) {
-        Pageable pageable = PageRequest.of(pageNumber, pageSize);
-        return requestRepository.findAll(fetchRolesAndUser().and(isPending()), pageable);
+        try{
+            Pageable pageable = PageRequest.of(pageNumber, pageSize);
+            return requestRepository.findAll(fetchRolesAndUser().and(isPending()), pageable);
+        }catch(Exception e){
+            e.printStackTrace();
+            return null;
+        }
     }
 
     /**
@@ -92,11 +98,14 @@ public class AdminService {
             throw new IllegalArgumentException("Request not found: " + requestId);
         }
         else{
+            User userObj = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+
             Request foundRequest = requestOptional.get();
             if(request_status.equals(RequestStatus.APPROVED.name())){
 
                 foundRequest.setRequestStatus(RequestStatus.APPROVED);
                 foundRequest.setDateUpdated(LocalDateTime.now());
+                foundRequest.setApprover_id(userObj.getUser_id());
 
                 //update users roles as well
                 List<Integer> requested_roles = foundRequest.getRoleIds();

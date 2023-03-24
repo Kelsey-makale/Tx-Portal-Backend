@@ -112,5 +112,16 @@ public class UserDetails {
         this.officeNumber = officeNumber;
     }
 
-
+    @Override
+    public String toString() {
+        return "UserDetails{" +
+                ", firstName='" + firstName + '\'' +
+                ", secondName='" + secondName + '\'' +
+                ", phoneNumber='" + phoneNumber + '\'' +
+                ", designation='" + designation + '\'' +
+                ", department='" + department + '\'' +
+                ", officeNumber='" + officeNumber + '\'' +
+                ", organization=" + organization +
+                '}';
+    }
 }
