@@ -67,6 +67,9 @@ public class AdminService {
     public Map<String, Object> getSpecificUser(long user_id){
 
         Optional<User> userOptional = userRepository.findUserByUserId(user_id);
+        if(userOptional.isEmpty()){
+            throw new IllegalArgumentException("user not found:");
+        }
         User user = userOptional.get();
 
         Map<String, Object> response = new HashMap<>();

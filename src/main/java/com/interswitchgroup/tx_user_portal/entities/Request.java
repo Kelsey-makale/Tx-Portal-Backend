@@ -16,6 +16,8 @@ public class Request {
     @JoinColumn(name = "user_id")
     private User user;
 
+    //todo: Link to Organization table.
+
     @ElementCollection
     @CollectionTable(name = "request_roles", joinColumns = @JoinColumn(name = "request_id"))
     @Column(name = "role_id")

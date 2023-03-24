@@ -1,4 +1,4 @@
-package com.interswitchgroup.tx_user_portal.models;
+package com.interswitchgroup.tx_user_portal.models.request;
 
 public class UserSignUpRequestModel {
     private String first_name;

@@ -2,10 +2,17 @@ package com.interswitchgroup.tx_user_portal.services;
 
 import com.interswitchgroup.tx_user_portal.entities.*;
 import com.interswitchgroup.tx_user_portal.models.*;
+import com.interswitchgroup.tx_user_portal.models.request.*;
+import com.interswitchgroup.tx_user_portal.models.response.UserResponseModel;
 import com.interswitchgroup.tx_user_portal.repositories.*;
+import com.interswitchgroup.tx_user_portal.security.JwtUtil;
 import com.interswitchgroup.tx_user_portal.utils.Enums.RequestStatus;
 import com.interswitchgroup.tx_user_portal.utils.Enums.UserPermission;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -21,12 +28,16 @@ public class GenericService {
     private final UserVerificationRepository userVerificationRepository;
     private final RequestRepository requestRepository;
     private final EmailService emailService;
+    private  final AuthenticationManager authenticationManager;
 
     @Autowired
     PasswordEncoder passwordEncoder;
 
     @Autowired
-    public GenericService(UserRepository userRepository, UserDetailsRepository userDetailsRepository,  OrganizationRepository organizationRepository, RoleRepository roleRepository, UserVerificationRepository userVerificationRepository, RequestRepository requestRepository, EmailService emailService) {
+    JwtUtil jwtUtil;
+
+    @Autowired
+    public GenericService(UserRepository userRepository, UserDetailsRepository userDetailsRepository, OrganizationRepository organizationRepository, RoleRepository roleRepository, UserVerificationRepository userVerificationRepository, RequestRepository requestRepository, EmailService emailService, AuthenticationManager authenticationManager) {
         this.userRepository = userRepository;
         this.userDetailsRepository = userDetailsRepository;
         this.organizationRepository = organizationRepository;
@@ -34,112 +45,288 @@ public class GenericService {
         this.userVerificationRepository = userVerificationRepository;
         this.requestRepository = requestRepository;
         this.emailService = emailService;
+        this.authenticationManager = authenticationManager;
     }
 
+    public UserResponseModel createUser(UserSignUpRequestModel userSignUpRequestModel){
+        UserResponseModel responseModel;
+        Map<String, Object> responseBody = new HashMap<>();
+        try {
+            Optional<User> userOptional = userRepository.findUserByEmailAddress(userSignUpRequestModel.getEmail_address());
+            Optional<Organization> organizationOptional = organizationRepository.findByOrganizationId(userSignUpRequestModel.getOrganization_id());
 
-    public String createUser(UserSignUpRequestModel userSignUpRequestModel){
-        //1. Add user to database and return userID
+            if (userOptional.isPresent()) {
+                System.out.println("USER ALREADY EXISTS");
+                throw new IllegalArgumentException("A user with this email already exists: " + userSignUpRequestModel.getEmail_address());
+            }
+            if (organizationOptional.isEmpty()) {
+                throw new IllegalArgumentException("Organization not found: " + userSignUpRequestModel.getOrganization_id());
+            }
+            else {
+                String encPass = passwordEncoder.encode(userSignUpRequestModel.getPassword());
+                List<Integer> my_roles = new ArrayList<>();
+                User newUser = new User(
+                        userSignUpRequestModel.getEmail_address(),
+                        encPass,
+                        my_roles,
+                        UserPermission.BANK_USER,
+                        LocalDateTime.now(),
+                        LocalDateTime.now()
+                );
 
-        //check if they exist on the db first
-        Optional<User> userOptional = userRepository.findUserByEmailAddress(userSignUpRequestModel.getEmail_address());
-        Optional<Organization> organizationOptional = organizationRepository.findByOrganizationId(userSignUpRequestModel.getOrganization_id());
+                //2.a Add user details to db
+                UserDetails newUserDetails = new UserDetails(
+                        userSignUpRequestModel.getFirst_name(),
+                        userSignUpRequestModel.getSecond_name(),
+                        userSignUpRequestModel.getPhone_number(),
+                        userSignUpRequestModel.getDesignation(),
+                        userSignUpRequestModel.getDepartment(),
+                        userSignUpRequestModel.getOffice_number(),
+                        organizationOptional.get(),
+                        LocalDateTime.now(),
+                        LocalDateTime.now());
 
-        if(userOptional.isPresent()){
-            System.out.println("USER ALREADY EXISTS");
-            throw new IllegalArgumentException("A user with this email already exists: " + userSignUpRequestModel.getEmail_address());
+                newUser.setUserDetails(newUserDetails);
+                User created_user = userRepository.save(newUser);
+
+                //3. Generate OTP
+                generateOTP(created_user);
+
+            }
+
+            responseModel = new UserResponseModel(
+                    HttpStatus.OK.value(),
+                    "User registered Successfully"
+            );
         }
-        else if(organizationOptional.isEmpty()){
-            throw new IllegalArgumentException("Organization not found: " + userSignUpRequestModel.getOrganization_id());
+        catch(IllegalArgumentException e){
+            responseBody.put("error", e.getMessage());
+            responseModel = new UserResponseModel(
+                    HttpStatus.EXPECTATION_FAILED.value(),
+                    "Failed to register user",
+                    Optional.of(responseBody)
+            );
         }
-        else{
-            String encPass = passwordEncoder.encode(userSignUpRequestModel.getPassword());
-            List<Integer> my_roles = new ArrayList<>();
-            User newUser = new User(
-                    userSignUpRequestModel.getEmail_address(),
-                    encPass,
-                    my_roles,
-                    UserPermission.BANK_USER,
-                    LocalDateTime.now(),
-                    LocalDateTime.now()
+        return responseModel;
+    }
+
+    public UserResponseModel signInUser(UserSignInRequestModel userSignInRequestModel){
+        UserResponseModel responseModel;
+        Map<String, Object> response = new HashMap<>();
+        try {
+            authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(
+                            userSignInRequestModel.getEmail_address(),
+                            userSignInRequestModel.getPassword()
+                    )
             );
 
+            Optional<User> userOptional = userRepository.findUserByEmailAddress(userSignInRequestModel.getEmail_address());
+            User user = userOptional.orElseThrow(() -> new IllegalArgumentException("User not found with email: " + userSignInRequestModel.getEmail_address()));
 
-            //2.a Add user details to db
-            UserDetails newUserDetails = new UserDetails(
-                    userSignUpRequestModel.getFirst_name(),
-                    userSignUpRequestModel.getSecond_name(),
-                    userSignUpRequestModel.getPhone_number(),
-                    userSignUpRequestModel.getDesignation(),
-                    userSignUpRequestModel.getDepartment(),
-                    userSignUpRequestModel.getOffice_number(),
-                    organizationOptional.get(),
-                    LocalDateTime.now(),
-                    LocalDateTime.now());
+            //create jwt
+            CreatedUser createdUser = new CreatedUser(
+                    user.getEmailAddress(),
+                    user.getUserDetails().getOrganization().getOrganization_id());
 
-            newUser.setUserDetails(newUserDetails);
-            User created_user =  userRepository.save(newUser);
+            String jwt = JwtUtil.createJwt(createdUser);
 
-            //3. Generate OTP
-            String my_otp = generateOTP(created_user.getUser_id());
+            //return success message with jwt
+            Map<String, Object> responseData = new HashMap<>();
+            responseData.put("token", jwt);
+            responseData.put("user", user);
 
-            /*
-            4. Send user email containing the OTP
-            emailService.sendMail(userSignUpRequestModel.getEmail_address(), "Verify Account", "Your OTP is" + my_otp);
-             */
-
-            return created_user.getUser_id().toString();
+            responseModel = new UserResponseModel(
+                    HttpStatus.OK.value(),
+                    "User successfully signed in",
+                    Optional.of(responseData)
+            );
 
         }
-    }
-
-    public String signInUser(UserSignInRequestModel userSignInRequestModel){
-        //1. verify if user exists
-        Optional<User> userOptional = userRepository.findUserByEmailAddress(userSignInRequestModel.getEmail_address());
-        User user = userOptional.orElseThrow(() -> new IllegalArgumentException("User not found with email: " + userSignInRequestModel.getEmail_address()));
-        if (passwordEncoder.matches(userSignInRequestModel.getPassword(), user.getPassword())) {
-            //2. send them an otp
-            String my_otp = generateOTP(user.getUser_id());
-            //emailService.sendMail(userSignInRequestModel.getEmail_address(), "Verify Account", "Your OTP is " + my_otp);
-            return user.getEmailAddress();
-        } else {
-            throw new IllegalArgumentException("Invalid credentials for user with email: " + userSignInRequestModel.getEmail_address());
+        catch (BadCredentialsException e) {
+            response.put("error", e.getMessage());
+            responseModel = new UserResponseModel(
+                    HttpStatus.EXPECTATION_FAILED.value(),
+                    "Failed to register user",
+                    Optional.of(response)
+            );
         }
+
+        return responseModel;
     }
 
-    public String generateOTP(long userId){
+    public void generateOTP(User user){
+        Optional<UserVerification> userVerificationOptional = userVerificationRepository.findUserVerificationByUserUserId(user.getUser_id());
+
         //1. generate 5 digit OTP
         Random random = new Random();
         String generatedOTP = String.valueOf(random.nextInt(90000) + 10000);
+        UserVerification userVerification;
 
-        //2. save OTP (with an expiry)
-        UserVerification userVerification = new UserVerification(
-                generatedOTP,
-                String.valueOf(userId),
-                LocalDateTime.now(),
-                LocalDateTime.now().plusMinutes(15)// Set to expire in 15 min
-        );
-        userVerificationRepository.save(userVerification);
+        if(userVerificationOptional.isPresent()){
+            //perform update operation
+            userVerification = userVerificationOptional.get();
+            userVerification.setCreated_at(LocalDateTime.now());
+            userVerification.setExpires_at(LocalDateTime.now().plusMinutes(15));
+            userVerification.setOtp_code(generatedOTP);
+
+            //save OTP (with an expiry)
+            userVerificationRepository.save(userVerification);
+        }
+        else{
+            //perform create operation
+            userVerification = new UserVerification(
+                    generatedOTP,
+                    user,
+                    LocalDateTime.now(),
+                    LocalDateTime.now().plusMinutes(15)// Set to expire in 15 min
+            );
+            //save OTP (with an expiry)
+            userVerificationRepository.save(userVerification);
+        }
+
+
+        //4. Send user email containing the OTP
+        //emailService.sendMail(user.getEmailAddress(), "Verify Account", "Your OTP is" + generatedOTP);
         System.out.println("YOUR OTP IS :: "+ generatedOTP);
-        return generatedOTP;
     }
 
-    public void verifyEmail(UserVerifyRequestModel userVerifyRequestModel){}
-
-    public void resendVerificationCode(ResendOTPRequestModel resendOTPRequestModel){}
-
-    public Map<String, Object> getOrganizationAndRoleData(){
-        List<Organization> organizationList = organizationRepository.findAll();
-        List<Role> roleList = roleRepository.findAll();
-
+    public UserResponseModel verifyEmail(UserVerifyRequestModel userVerifyRequestModel){
+        UserResponseModel responseModel;
         Map<String, Object> response = new HashMap<>();
-        response.put("organizations", organizationList);
-        response.put("roles", roleList);
 
-        return response;
+        try{
+            Optional<User> userOptional = userRepository.findUserByEmailAddress(userVerifyRequestModel.getEmail_address());
+            User user = userOptional.orElseThrow(() -> new IllegalArgumentException("User not found with email: " + userVerifyRequestModel.getEmail_address()));
+
+            Optional<UserVerification> userVerificationOptional = userVerificationRepository.findUserVerificationByUserUserId(user.getUser_id());
+
+            if(userVerificationOptional.isPresent()){
+                UserVerification userVerificationObj = userVerificationOptional.get();
+
+                if(userVerificationObj.getOtp_code().equals(userVerifyRequestModel.getVerification_code())){
+                    responseModel = new UserResponseModel(
+                            HttpStatus.OK.value(),
+                            "User successfully verified."
+                    );
+                }
+                else{
+                    response.put("error", "Invalid OTP");
+                    responseModel = new UserResponseModel(
+                            HttpStatus.EXPECTATION_FAILED.value(),
+                            "Failed to verify user",
+                            Optional.of(response)
+                    );
+                }
+            }
+            else{
+                //return record does not exist
+                throw new IllegalArgumentException("Record does not exist. User needs to sign up first.");
+            }
+        }
+        catch(IllegalArgumentException e){
+            response.put("error", e.getMessage());
+            responseModel = new UserResponseModel(
+                    HttpStatus.EXPECTATION_FAILED.value(),
+                    "Failed to register user",
+                    Optional.of(response)
+            );
+        }
+
+        return responseModel;
+
+    }
+
+    public UserResponseModel resendVerificationCode(ResendOTPRequestModel resendOTPRequestModel){
+        UserResponseModel responseModel;
+        Map<String, Object> responseBody = new HashMap<>();
+
+        try{
+            Optional<User> userOptional = userRepository.findUserByEmailAddress(resendOTPRequestModel.getEmail_address());
+            User user = userOptional.orElseThrow(() -> new IllegalArgumentException("User not found with email: " + resendOTPRequestModel.getEmail_address()));
+
+            //generate OTP & send it via email
+            generateOTP(user);
+
+            responseModel = new UserResponseModel(
+                    HttpStatus.OK.value(),
+                    "OTP sent successfully."
+            );
+
+
+        }catch (IllegalArgumentException e){
+            responseBody.put("error", e.getMessage());
+            responseModel = new UserResponseModel(
+                    HttpStatus.EXPECTATION_FAILED.value(),
+                    "Failed to resend OTP",
+                    Optional.of(responseBody)
+            );
+        }
+        return responseModel;
+    }
+
+    public UserResponseModel getOrganizationData(){
+        UserResponseModel responseModel;
+        Map<String, Object> response = new HashMap<>();
+
+        try{
+            List<Organization> organizationList = organizationRepository.findAll();
+            response.put("organizations", organizationList);
+            responseModel = new UserResponseModel(
+                    HttpStatus.OK.value(),
+                    "Success",
+                    Optional.of(response)
+            );
+
+        }catch(Exception e){
+            response.put("error", e.getMessage());
+            responseModel = new UserResponseModel(
+                    HttpStatus.EXPECTATION_FAILED.value(),
+                    "Failed to fetch organizations",
+                    Optional.of(response)
+            );
+        }
+
+
+        return responseModel;
+    }
+
+    public UserResponseModel getRoleData(){
+        UserResponseModel responseModel;
+        Map<String, Object> response = new HashMap<>();
+
+        try{
+            List<Role> roleList = roleRepository.findAll();
+            response.put("roles", roleList);
+
+            responseModel = new UserResponseModel(
+                    HttpStatus.OK.value(),
+                    "Success",
+                    Optional.of(response)
+            );
+
+        }catch(Exception e){
+            response.put("error", e.getMessage());
+            responseModel = new UserResponseModel(
+                    HttpStatus.EXPECTATION_FAILED.value(),
+                    "Failed to fetch organizations",
+                    Optional.of(response)
+            );
+        }
+
+
+        return responseModel;
     }
 
     public void makeRequest(UserRoleRequestModel requestModel){
         //todo: figure out how to handle duplicates.
+        //todo: handle when the user is blocked
+
+        try{
+
+        }catch(IllegalArgumentException e){
+
+        }
         Optional<User> userOptional = userRepository.findUserByUserId(requestModel.getUserId());
         User user = userOptional.orElseThrow(() -> new IllegalArgumentException("User not found: " + requestModel.getUserId()));
 

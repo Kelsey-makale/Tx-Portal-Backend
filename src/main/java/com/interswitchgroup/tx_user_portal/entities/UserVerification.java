@@ -13,8 +13,9 @@ public class UserVerification {
     @Column(name = "otp_code")
     private String otp_code;
 
-   @Column(name = "user_id")
-    private String user_id;
+    @OneToOne(cascade = CascadeType.ALL)
+    @JoinColumn(name = "user_id")
+    private User user;
 
     @Column(name = "otp_verified", columnDefinition = "boolean default false")
     private boolean otp_verified;
@@ -29,9 +30,9 @@ public class UserVerification {
     public UserVerification() {
     }
 
-    public UserVerification(String otp_code, String user_id, LocalDateTime created_at, LocalDateTime expires_at) {
+    public UserVerification(String otp_code, User user, LocalDateTime created_at, LocalDateTime expires_at) {
         this.otp_code = otp_code;
-        this.user_id = user_id;
+        this.user = user;
         this.created_at = created_at;
         this.expires_at = expires_at;
     }
@@ -44,12 +45,12 @@ public class UserVerification {
         this.id = id;
     }
 
-    public String getUser_id() {
-        return user_id;
+    public User getUser_id() {
+        return user;
     }
 
-    public void setUser_id(String user_id) {
-        this.user_id = user_id;
+    public void setUser_id(User user) {
+        this.user = user;
     }
 
     public String getOtp_code() {
