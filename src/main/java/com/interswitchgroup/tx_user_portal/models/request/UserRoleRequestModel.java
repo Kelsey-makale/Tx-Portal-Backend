@@ -4,9 +4,9 @@ import java.util.List;
 
 public class UserRoleRequestModel {
     private long userId;
-    private List<Integer> roleIds;
+    private List<Long> roleIds;
 
-    public UserRoleRequestModel(long userId, List<Integer> roleIds) {
+    public UserRoleRequestModel(long userId, List<Long> roleIds) {
         this.userId = userId;
         this.roleIds = roleIds;
     }
@@ -19,11 +19,11 @@ public class UserRoleRequestModel {
         this.userId = userId;
     }
 
-    public List<Integer> getRoleIds() {
+    public List<Long> getRoleIds() {
         return roleIds;
     }
 
-    public void setRoleIds(List<Integer> roleIds) {
+    public void setRoleIds(List<Long> roleIds) {
         this.roleIds = roleIds;
     }
 }

@@ -4,6 +4,7 @@ import com.interswitchgroup.tx_user_portal.utils.Enums.RequestStatus;
 import jakarta.persistence.*;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 @Entity
@@ -22,10 +23,8 @@ public class Request {
     @Column(name = "organizationId")
     private long organizationId;
 
-    @ElementCollection
-    @CollectionTable(name = "request_roles", joinColumns = @JoinColumn(name = "request_id"))
-    @Column(name = "role_id")
-    private List<Integer> roleIds;
+    @OneToMany(mappedBy = "request", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<RequestRole> requestRoles;
 
     @Enumerated(EnumType.STRING)
     private RequestStatus requestStatus;
@@ -40,14 +39,15 @@ public class Request {
     public Request() {
     }
 
-    public Request(User user, long organizationId,  List<Integer> roles, RequestStatus requestStatus, LocalDateTime dateCreated, LocalDateTime dateUpdated) {
+    public Request(User user, long organizationId, RequestStatus requestStatus, LocalDateTime dateCreated, LocalDateTime dateUpdated) {
         this.user = user;
         this.organizationId = organizationId;
-        this.roleIds = roles;
         this.requestStatus = requestStatus;
         this.dateCreated = dateCreated;
         this.dateUpdated = dateUpdated;
     }
+
+
 
     public long getRequest_id() {
         return requestId;
@@ -65,12 +65,12 @@ public class Request {
         this.user = user;
     }
 
-    public List<Integer> getRoleIds() {
-        return roleIds;
+    public List<RequestRole> getRequestRoles() {
+        return requestRoles;
     }
 
-    public void setRoleIds(List<Integer> roleIds) {
-        this.roleIds = roleIds;
+    public void setRequestRoles(List<RequestRole> requestRoles) {
+        this.requestRoles = requestRoles;
     }
 
     public RequestStatus getRequestStatus() {

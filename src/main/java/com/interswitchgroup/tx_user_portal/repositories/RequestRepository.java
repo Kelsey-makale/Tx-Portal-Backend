@@ -17,4 +17,5 @@ public interface RequestRepository  extends JpaRepository<Request, Long>, JpaSpe
 
     @Query("SELECT r FROM Request r WHERE r.dateCreated BETWEEN :startDate AND :endDate")
     List<Request> findByDateRange(@Param("startDate") LocalDateTime startDate, @Param("endDate") LocalDateTime endDate);
+
 }

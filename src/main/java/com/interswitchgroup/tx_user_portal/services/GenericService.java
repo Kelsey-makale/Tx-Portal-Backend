@@ -337,15 +337,26 @@ public class GenericService {
             Optional<User> userOptional = userRepository.findUserByUserId(requestModel.getUserId());
             User user = userOptional.orElseThrow(() -> new IllegalArgumentException("User not found: " + requestModel.getUserId()));
 
-            Request newRequest = new Request(
-                    user,
-                    user.getUserDetails().getOrganization().getOrganization_id(),
-                    requestModel.getRoleIds(),
-                    RequestStatus.PENDING,
-                    LocalDateTime.now(),
-                    LocalDateTime.now()
-            );
+            Request newRequest = new Request();
+            newRequest.setUser(user);
+            newRequest.setOrganizationId(user.getUserDetails().getOrganization().getOrganization_id());
+            newRequest.setRequestStatus(RequestStatus.PENDING);
+            newRequest.setDateCreated(LocalDateTime.now());
+            newRequest.setDateUpdated(LocalDateTime.now());
 
+            List<Role> fetchedRoles = roleRepository.findAllById(requestModel.getRoleIds());
+
+
+            List<RequestRole> requestRoles = new ArrayList<>();
+            for (Role role : fetchedRoles) {
+                RequestRole requestPermission = new RequestRole();
+                requestPermission.setRequest(newRequest);
+                requestPermission.setRole(role);
+
+                requestRoles.add(requestPermission);
+            }
+
+            newRequest.setRequestRoles(requestRoles);
             requestRepository.save(newRequest);
 
             responseModel = new UserResponseModel(
@@ -387,7 +398,6 @@ public class GenericService {
         return (root, query, builder) -> {
             // fetch user
             root.fetch("user", JoinType.LEFT);
-            Join<Request, Role> roleJoin = root.join("r", JoinType.LEFT);
             // return the root entity
             query.distinct(true);
             return builder.conjunction();

@@ -138,7 +138,7 @@ public class AdminService {
 
             Request foundRequest = requestOptional.get();
             if(request_status.equals(RequestStatus.APPROVED.name())){
-
+/*
                 foundRequest.setRequestStatus(RequestStatus.APPROVED);
                 foundRequest.setDateUpdated(LocalDateTime.now());
                 foundRequest.setApprover_id(userObj.getUser_id());
@@ -154,6 +154,8 @@ public class AdminService {
                 }
                 //save those users roles
                 requestUser.setRoleIds(users_current_roles);
+
+ */
             }
             else if(request_status.equals(RequestStatus.REJECTED.name())){
                 foundRequest.setRequestStatus(RequestStatus.REJECTED);
@@ -187,7 +189,7 @@ public class AdminService {
 
                 Request foundRequest = requestOptional.get();
                 if(requestModel.getRequest_status().equals(RequestStatus.APPROVED.name())){
-
+/*
                     foundRequest.setRequestStatus(RequestStatus.APPROVED);
                     foundRequest.setDateUpdated(LocalDateTime.now());
                     foundRequest.setApprover_id(userObj.getUser_id());
@@ -203,6 +205,8 @@ public class AdminService {
                     }
                     //save those users roles
                     requestUser.setRoleIds(users_current_roles);
+
+ */
                 }
                 else if(requestModel.getRequest_status().equals(RequestStatus.REJECTED.name())){
                     foundRequest.setRequestStatus(RequestStatus.REJECTED);
