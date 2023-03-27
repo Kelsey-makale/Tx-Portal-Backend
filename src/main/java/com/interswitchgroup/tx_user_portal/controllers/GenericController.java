@@ -20,6 +20,16 @@ public class GenericController {
         this.genericService = genericService;
     }
 
+    @GetMapping("/hello")
+    public ResponseEntity<String> hello(){
+        try{
+            System.out.println("HELLO WORLD");
+        }catch(Exception e){
+            e.printStackTrace();
+        }
+        return new ResponseEntity<>("Hello World!", HttpStatus.OK);
+    }
+
     @PostMapping("/signIn")
     public ResponseEntity<UserResponseModel> signIn(@RequestBody UserSignInRequestModel userSignInRequestModel){
         UserResponseModel resp = genericService.signInUser(userSignInRequestModel);

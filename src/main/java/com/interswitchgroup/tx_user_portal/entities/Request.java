@@ -19,6 +19,9 @@ public class Request {
     @Column(name = "approver_id")
     private long approver_id;
 
+    @Column(name = "organizationId")
+    private long organizationId;
+
     @ElementCollection
     @CollectionTable(name = "request_roles", joinColumns = @JoinColumn(name = "request_id"))
     @Column(name = "role_id")
@@ -37,8 +40,9 @@ public class Request {
     public Request() {
     }
 
-    public Request( User user, List<Integer> roles, RequestStatus requestStatus, LocalDateTime dateCreated, LocalDateTime dateUpdated) {
+    public Request(User user, long organizationId,  List<Integer> roles, RequestStatus requestStatus, LocalDateTime dateCreated, LocalDateTime dateUpdated) {
         this.user = user;
+        this.organizationId = organizationId;
         this.roleIds = roles;
         this.requestStatus = requestStatus;
         this.dateCreated = dateCreated;
@@ -93,11 +97,18 @@ public class Request {
         this.dateUpdated = dateUpdated;
     }
 
-    public long getApprover_id() {
-        return approver_id;
-    }
+    public long getApprover_id() {return approver_id;}
 
     public void setApprover_id(long approver_id) {
         this.approver_id = approver_id;
+    }
+
+
+    public long getOrganizationId() {
+        return organizationId;
+    }
+
+    public void setOrganizationId(long organizationId) {
+        this.organizationId = organizationId;
     }
 }

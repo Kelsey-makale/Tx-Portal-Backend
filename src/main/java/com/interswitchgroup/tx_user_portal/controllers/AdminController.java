@@ -3,6 +3,7 @@ package com.interswitchgroup.tx_user_portal.controllers;
 import com.interswitchgroup.tx_user_portal.entities.Request;
 import com.interswitchgroup.tx_user_portal.entities.User;
 import com.interswitchgroup.tx_user_portal.entities.UserDetails;
+import com.interswitchgroup.tx_user_portal.models.request.UpdateRequestStatusRequestModel;
 import com.interswitchgroup.tx_user_portal.services.AdminService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -29,6 +30,19 @@ public class AdminController {
         adminService.UpdateRequestStatus(request_id, request_status);
         return new ResponseEntity<>("Request updated successfully", HttpStatus.OK);
     }
+
+    @PostMapping("/requests/update-status")
+    public ResponseEntity<String> updateRequests(@RequestBody List<UpdateRequestStatusRequestModel> requestModelList){
+        adminService.UpdateMultipleRequestStatus(requestModelList);
+        return new ResponseEntity<>("Requests updated successfully", HttpStatus.OK);
+    }
+
+    @GetMapping("/filter-by-date")
+    public ResponseEntity<List<Request>> filterRequestsByDate(@RequestParam String filter){
+        List<Request> filteredRequests = adminService.getRequestsByDateFilter(filter);
+        return new ResponseEntity<>(filteredRequests, HttpStatus.OK);
+    }
+
 
     @GetMapping("/pending-requests")
     public ResponseEntity<Page<Request>> getPendingRequests(@RequestParam(defaultValue = "0") int pageNumber, @RequestParam(defaultValue = "10") int pageSize){

@@ -27,7 +27,7 @@ public class JwtUtil {
                 .withClaim("organization_id", createdUser.getOrganization_id())
                 .withIssuer("auth0")
                 .withIssuedAt(new Date(System.currentTimeMillis()))
-                .withExpiresAt(new Date(System.currentTimeMillis()+900000L)) //15 min
+                .withExpiresAt(new Date(System.currentTimeMillis()+86400000L)) //24 hrs
                 .sign(algorithm);
     }
 

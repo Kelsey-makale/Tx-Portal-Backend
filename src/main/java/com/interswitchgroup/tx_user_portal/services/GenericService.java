@@ -8,16 +8,23 @@ import com.interswitchgroup.tx_user_portal.repositories.*;
 import com.interswitchgroup.tx_user_portal.security.JwtUtil;
 import com.interswitchgroup.tx_user_portal.utils.Enums.RequestStatus;
 import com.interswitchgroup.tx_user_portal.utils.Enums.UserPermission;
+import jakarta.persistence.criteria.*;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 public class GenericService {
@@ -319,8 +326,8 @@ public class GenericService {
     }
 
     public UserResponseModel makeRequest(UserRoleRequestModel requestModel){
-        //todo: figure out how to handle duplicates.
-        //todo: handle when the user is blocked
+        //todo: figure out how to handle duplicates. A user making the same request twice.
+        //todo: handle when the user is blocked (POSTPONE)
         //todo: send email to info_sec and bank admin
 
         UserResponseModel responseModel;
@@ -332,6 +339,7 @@ public class GenericService {
 
             Request newRequest = new Request(
                     user,
+                    user.getUserDetails().getOrganization().getOrganization_id(),
                     requestModel.getRoleIds(),
                     RequestStatus.PENDING,
                     LocalDateTime.now(),
@@ -357,4 +365,43 @@ public class GenericService {
        return responseModel;
     }
 
+
+    public Page<Request> getMyPendingRequests(int pageNumber, int pageSize) {
+        try{
+            User currentAdmin = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+            long user_id = currentAdmin.getUser_id();
+
+            Pageable pageable = PageRequest.of(pageNumber, pageSize);
+            return requestRepository.findAll(fetchRolesAndUser().and(areMine(user_id)), pageable);
+        }catch(Exception e){
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    /**
+     This method returns a JPA Specification that is used to eagerly
+     fetch the associated user and role entities for each request
+     **/
+    private static Specification<Request> fetchRolesAndUser() {
+        return (root, query, builder) -> {
+            // fetch user
+            root.fetch("user", JoinType.LEFT);
+            Join<Request, Role> roleJoin = root.join("r", JoinType.LEFT);
+            // return the root entity
+            query.distinct(true);
+            return builder.conjunction();
+        };
+    }
+
+    /**
+     * This method returns a JPA Specification that is used to eagerly fetch the requests marked as PENDING
+     **/
+    private static Specification<Request> areMine(long userId) {
+        return (root, query, builder) -> {
+            return builder.and(
+                    builder.equal(root.get("user").get("userId"), userId)
+            );
+        };
+    }
 }

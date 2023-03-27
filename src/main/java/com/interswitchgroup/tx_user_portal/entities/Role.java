@@ -10,7 +10,7 @@ public class Role {
     @Column(name = "role_id", updatable = false)
     private long role_id;
 
-    @Column(name = "role-name", nullable = false)
+    @Column(name = "role_name", nullable = false)
     private String role_name;
 
     public Role() {
