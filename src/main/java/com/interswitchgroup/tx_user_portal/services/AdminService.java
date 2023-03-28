@@ -44,27 +44,11 @@ public class AdminService {
             long org_id = currentAdmin.getUserDetails().getOrganization().getOrganization_id();
 
             Pageable pageable = PageRequest.of(pageNumber, pageSize);
-            return requestRepository.findAll(fetchRolesAndUser().and(isPendingForAdmin(org_id)), pageable);
+            return requestRepository.findAll(isPendingForAdmin(org_id), pageable);
         }catch(Exception e){
             e.printStackTrace();
             return null;
         }
-    }
-
-    /**
-      This method returns a JPA Specification that is used to eagerly
-      fetch the associated user and role entities for each request
-     **/
-    private static Specification<Request> fetchRolesAndUser() {
-        return (root, query, builder) -> {
-            // fetch user
-            root.fetch("user", JoinType.LEFT);
-            // fetch role using join
-            root.fetch("roleIds", JoinType.LEFT);
-            // return the root entity
-            query.distinct(true);
-            return builder.conjunction();
-        };
     }
 
     /**

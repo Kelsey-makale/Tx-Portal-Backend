@@ -29,7 +29,6 @@ public class UserController {
         return new ResponseEntity<>(genericService.getRoleData(), HttpStatus.OK);
     }
 
-
     @PostMapping("/request")
     public ResponseEntity<String> makePermissionRequest(@RequestBody UserRoleRequestModel requestModel){
         genericService.makeRequest(requestModel);
@@ -37,8 +36,8 @@ public class UserController {
     }
 
     @GetMapping("/my-requests")
-    public ResponseEntity<Page<Request>> getMyPendingRequests(@RequestParam(defaultValue = "0") int pageNumber, @RequestParam(defaultValue = "10") int pageSize){
-        Page<Request> allRequests = genericService.getMyPendingRequests(pageNumber, pageSize);
+    public ResponseEntity<Page<Request>> getPendingRequests(){
+       Page<Request> allRequests = genericService.getMyRequests(0,10);
         return new ResponseEntity<>(allRequests, HttpStatus.OK);
     }
 }

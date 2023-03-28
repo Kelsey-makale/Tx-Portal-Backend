@@ -6,6 +6,7 @@ import jakarta.persistence.*;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 @Entity
 public class Request {
@@ -23,8 +24,14 @@ public class Request {
     @Column(name = "organizationId")
     private long organizationId;
 
-    @OneToMany(mappedBy = "request", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<RequestRole> requestRoles;
+
+    @ManyToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @JoinTable(name = "RequestRoles", joinColumns = {
+            @JoinColumn(name = "requestId", referencedColumnName = "requestId")
+    }, inverseJoinColumns = {@JoinColumn(name = "roleId", referencedColumnName = "role_id")})
+
+    private Set<Role> roles;
+
 
     @Enumerated(EnumType.STRING)
     private RequestStatus requestStatus;
@@ -48,6 +55,13 @@ public class Request {
     }
 
 
+    public Set<Role> getRoles() {
+        return roles;
+    }
+
+    public void setRoles(Set<Role> roles) {
+        this.roles = roles;
+    }
 
     public long getRequest_id() {
         return requestId;
@@ -64,7 +78,7 @@ public class Request {
     public void setUser(User user) {
         this.user = user;
     }
-
+/*
     public List<RequestRole> getRequestRoles() {
         return requestRoles;
     }
@@ -72,6 +86,8 @@ public class Request {
     public void setRequestRoles(List<RequestRole> requestRoles) {
         this.requestRoles = requestRoles;
     }
+
+ */
 
     public RequestStatus getRequestStatus() {
         return requestStatus;

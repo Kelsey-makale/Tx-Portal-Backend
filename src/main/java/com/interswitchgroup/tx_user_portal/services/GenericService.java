@@ -8,7 +8,6 @@ import com.interswitchgroup.tx_user_portal.repositories.*;
 import com.interswitchgroup.tx_user_portal.security.JwtUtil;
 import com.interswitchgroup.tx_user_portal.utils.Enums.RequestStatus;
 import com.interswitchgroup.tx_user_portal.utils.Enums.UserPermission;
-import jakarta.persistence.criteria.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -24,7 +23,6 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.*;
-import java.util.stream.Collectors;
 
 @Service
 public class GenericService {
@@ -312,7 +310,8 @@ public class GenericService {
                     Optional.of(response)
             );
 
-        }catch(Exception e){
+        }
+        catch(Exception e){
             response.put("error", e.getMessage());
             responseModel = new UserResponseModel(
                     HttpStatus.EXPECTATION_FAILED.value(),
@@ -346,17 +345,8 @@ public class GenericService {
 
             List<Role> fetchedRoles = roleRepository.findAllById(requestModel.getRoleIds());
 
-
-            List<RequestRole> requestRoles = new ArrayList<>();
-            for (Role role : fetchedRoles) {
-                RequestRole requestPermission = new RequestRole();
-                requestPermission.setRequest(newRequest);
-                requestPermission.setRole(role);
-
-                requestRoles.add(requestPermission);
-            }
-
-            newRequest.setRequestRoles(requestRoles);
+            Set<Role> set = new HashSet<>(fetchedRoles);
+            newRequest.setRoles(set);
             requestRepository.save(newRequest);
 
             responseModel = new UserResponseModel(
@@ -376,32 +366,16 @@ public class GenericService {
        return responseModel;
     }
 
-
-    public Page<Request> getMyPendingRequests(int pageNumber, int pageSize) {
+    public Page<Request> getMyRequests(int pageNumber, int pageSize) {
         try{
             User currentAdmin = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
             long user_id = currentAdmin.getUser_id();
-
             Pageable pageable = PageRequest.of(pageNumber, pageSize);
-            return requestRepository.findAll(fetchRolesAndUser().and(areMine(user_id)), pageable);
+            return requestRepository.findAll(areMine(user_id),pageable);
         }catch(Exception e){
             e.printStackTrace();
             return null;
         }
-    }
-
-    /**
-     This method returns a JPA Specification that is used to eagerly
-     fetch the associated user and role entities for each request
-     **/
-    private static Specification<Request> fetchRolesAndUser() {
-        return (root, query, builder) -> {
-            // fetch user
-            root.fetch("user", JoinType.LEFT);
-            // return the root entity
-            query.distinct(true);
-            return builder.conjunction();
-        };
     }
 
     /**

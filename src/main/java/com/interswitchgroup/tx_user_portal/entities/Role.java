@@ -2,6 +2,8 @@ package com.interswitchgroup.tx_user_portal.entities;
 
 import jakarta.persistence.*;
 
+import java.util.Set;
+
 @Entity
 public class Role {
 
@@ -12,6 +14,9 @@ public class Role {
 
     @Column(name = "role_name", nullable = false)
     private String role_name;
+
+    @ManyToMany(mappedBy = "roles", fetch = FetchType.LAZY)
+    private Set<Request> requests;
 
     public Role() {
     }
