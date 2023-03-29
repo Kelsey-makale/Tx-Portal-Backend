@@ -6,6 +6,7 @@ import com.interswitchgroup.tx_user_portal.repositories.RequestRepository;
 import com.interswitchgroup.tx_user_portal.repositories.RoleRepository;
 import com.interswitchgroup.tx_user_portal.repositories.UserDetailsRepository;
 import com.interswitchgroup.tx_user_portal.repositories.UserRepository;
+import com.interswitchgroup.tx_user_portal.utils.Enums.AccountStatus;
 import com.interswitchgroup.tx_user_portal.utils.Enums.RequestStatus;
 import jakarta.persistence.criteria.Join;
 import jakarta.persistence.criteria.JoinType;
@@ -228,7 +229,25 @@ public class AdminService {
     }
 
 
+    public void UpdateUserAccountStatus(long user_id, String account_status) {
+        //check if user exists on the db
+        Optional<User> userOptional = userRepository.findUserByUserId(user_id);
 
-
-
+        if(userOptional.isEmpty()){
+            throw new IllegalArgumentException("User not found");
+        }
+        else{
+           User user = userOptional.get();
+           if(account_status.equals(AccountStatus.ENABLE.name())){
+               user.getUserDetails().setVerified(true);
+           }
+           else if(account_status.equals(AccountStatus.DISABLE.name())){
+               user.getUserDetails().setVerified(false);
+           }
+           else{
+               throw new IllegalArgumentException("VALUE PASSED IS INCORRECT " + account_status);
+           }
+           userRepository.save(user);
+        }
+    }
 }

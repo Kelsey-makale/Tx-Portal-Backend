@@ -136,6 +136,14 @@ public class UserDetails {
         this.officeNumber = officeNumber;
     }
 
+    public boolean isVerified() {
+        return isVerified;
+    }
+
+    public void setVerified(boolean verified) {
+        isVerified = verified;
+    }
+
     @Override
     public String toString() {
         return "UserDetails{" +
