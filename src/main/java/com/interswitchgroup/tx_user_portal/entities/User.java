@@ -109,8 +109,8 @@ public class User implements org.springframework.security.core.userdetails.UserD
 
     @Override
     public boolean isEnabled() {
-        return true;
-    }
+        return false;
+    } //all users start off as disabled. Only the bank admin can enable them.
 
     public void setPassword(String password) {
         this.password = password;
@@ -147,6 +147,8 @@ public class User implements org.springframework.security.core.userdetails.UserD
     public void setRoles(Set<Role> roles) {
         this.roles = roles;
     }
+
+
 
     @Override
     public String toString() {
