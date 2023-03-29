@@ -1,9 +1,6 @@
 package com.interswitchgroup.tx_user_portal.services;
 
-import com.interswitchgroup.tx_user_portal.entities.Organization;
-import com.interswitchgroup.tx_user_portal.entities.Request;
-import com.interswitchgroup.tx_user_portal.entities.User;
-import com.interswitchgroup.tx_user_portal.entities.UserDetails;
+import com.interswitchgroup.tx_user_portal.entities.*;
 import com.interswitchgroup.tx_user_portal.models.request.UpdateRequestStatusRequestModel;
 import com.interswitchgroup.tx_user_portal.repositories.RequestRepository;
 import com.interswitchgroup.tx_user_portal.repositories.RoleRepository;
@@ -119,27 +116,24 @@ public class AdminService {
         }
         else{
             User userObj = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-
             Request foundRequest = requestOptional.get();
             if(request_status.equals(RequestStatus.APPROVED.name())){
-/*
+
                 foundRequest.setRequestStatus(RequestStatus.APPROVED);
                 foundRequest.setDateUpdated(LocalDateTime.now());
                 foundRequest.setApprover_id(userObj.getUser_id());
 
                 //update users roles as well
-                List<Integer> requested_roles = foundRequest.getRoleIds();
+                Set<Role> requestRoles = foundRequest.getRoles();
                 User requestUser = foundRequest.getUser();
-                List<Integer> users_current_roles = requestUser.getRoleIds();
+                Set<Role> myRoles = requestUser.getRoles();
 
                 //avoiding repetition
-                if(!users_current_roles.contains(requested_roles)){
-                    users_current_roles.addAll(requested_roles);
-                }
-                //save those users roles
-                requestUser.setRoleIds(users_current_roles);
+                 myRoles.addAll(requestRoles);
 
- */
+                //save those users roles
+                requestUser.setRoles(myRoles);
+
             }
             else if(request_status.equals(RequestStatus.REJECTED.name())){
                 foundRequest.setRequestStatus(RequestStatus.REJECTED);
@@ -173,24 +167,23 @@ public class AdminService {
 
                 Request foundRequest = requestOptional.get();
                 if(requestModel.getRequest_status().equals(RequestStatus.APPROVED.name())){
-/*
+
                     foundRequest.setRequestStatus(RequestStatus.APPROVED);
                     foundRequest.setDateUpdated(LocalDateTime.now());
                     foundRequest.setApprover_id(userObj.getUser_id());
 
                     //update users roles as well
-                    List<Integer> requested_roles = foundRequest.getRoleIds();
+                    Set<Role> requestRoles = foundRequest.getRoles();
                     User requestUser = foundRequest.getUser();
-                    List<Integer> users_current_roles = requestUser.getRoleIds();
+                    Set<Role> myRoles = requestUser.getRoles();
 
                     //avoiding repetition
-                    if(!users_current_roles.contains(requested_roles)){
-                        users_current_roles.addAll(requested_roles);
-                    }
-                    //save those users roles
-                    requestUser.setRoleIds(users_current_roles);
+                    myRoles.addAll(requestRoles);
 
- */
+                    //save those users roles
+                    requestUser.setRoles(myRoles);
+
+
                 }
                 else if(requestModel.getRequest_status().equals(RequestStatus.REJECTED.name())){
                     foundRequest.setRequestStatus(RequestStatus.REJECTED);
@@ -202,10 +195,6 @@ public class AdminService {
                 requestRepository.save(foundRequest);
             }
         }
-
-
-
-
     }
 
 

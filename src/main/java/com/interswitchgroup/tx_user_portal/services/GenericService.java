@@ -69,15 +69,15 @@ public class GenericService {
             }
             else {
                 String encPass = passwordEncoder.encode(userSignUpRequestModel.getPassword());
-                List<Integer> my_roles = new ArrayList<>();
-                User newUser = new User(
-                        userSignUpRequestModel.getEmail_address(),
-                        encPass,
-                        my_roles,
-                        UserPermission.BANK_USER,
-                        LocalDateTime.now(),
-                        LocalDateTime.now()
-                );
+                Set<Role> my_roles = new HashSet<>();
+                User newUser = new User();
+
+                newUser.setEmailAddress(userSignUpRequestModel.getEmail_address());
+                newUser.setPassword(encPass);
+                newUser.setRoles(my_roles);
+                newUser.setPermission( UserPermission.BANK_USER);
+                newUser.setDateCreated(LocalDateTime.now());
+                newUser.setDateUpdated(LocalDateTime.now());
 
                 //2.a Add user details to db
                 UserDetails newUserDetails = new UserDetails(

@@ -8,6 +8,7 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.List;
+import java.util.Set;
 
 @Entity
 public class User implements org.springframework.security.core.userdetails.UserDetails {
@@ -34,19 +35,20 @@ public class User implements org.springframework.security.core.userdetails.UserD
     @JoinColumn(name = "user_details_id")
     private UserDetails userDetails;
 
-    @ElementCollection
-    @CollectionTable(name = "user_roles", joinColumns = @JoinColumn(name = "user_id"))
-    @Column(name = "role_id")
-    private List<Integer> roleIds;
+    @ManyToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @JoinTable(name = "UserRoles", joinColumns = {
+            @JoinColumn(name = "userId", referencedColumnName = "userId")
+    }, inverseJoinColumns = {@JoinColumn(name = "roleId", referencedColumnName = "role_id")})
+
+    private Set<Role> roles;
 
 
     public User() {
     }
 
-    public User(String emailAddress, String password,List<Integer> roles, UserPermission userPermission, LocalDateTime dateCreated, LocalDateTime dateUpdated) {
+    public User(String emailAddress, String password, UserPermission userPermission, LocalDateTime dateCreated, LocalDateTime dateUpdated) {
         this.emailAddress = emailAddress;
         this.password = password;
-        this.roleIds = roles;
         this.permission = userPermission;
         this.dateCreated = dateCreated;
         this.dateUpdated = dateUpdated;
@@ -138,12 +140,12 @@ public class User implements org.springframework.security.core.userdetails.UserD
         this.userDetails = userDetails;
     }
 
-    public List<Integer> getRoleIds() {
-        return roleIds;
+    public Set<Role> getRoles() {
+        return roles;
     }
 
-    public void setRoleIds(List<Integer> roleIds) {
-        this.roleIds = roleIds;
+    public void setRoles(Set<Role> roles) {
+        this.roles = roles;
     }
 
     @Override
