@@ -1,11 +1,12 @@
 package com.interswitchgroup.tx_user_portal.services;
 
+import com.interswitchgroup.tx_user_portal.entities.Organization;
 import com.interswitchgroup.tx_user_portal.entities.Request;
+import com.interswitchgroup.tx_user_portal.entities.Role;
 import com.interswitchgroup.tx_user_portal.entities.User;
-import com.interswitchgroup.tx_user_portal.repositories.RequestRepository;
-import com.interswitchgroup.tx_user_portal.repositories.RoleRepository;
-import com.interswitchgroup.tx_user_portal.repositories.UserDetailsRepository;
-import com.interswitchgroup.tx_user_portal.repositories.UserRepository;
+import com.interswitchgroup.tx_user_portal.models.request.NewOrganizationRequestModel;
+import com.interswitchgroup.tx_user_portal.models.request.NewRoleRequestModel;
+import com.interswitchgroup.tx_user_portal.repositories.*;
 import com.interswitchgroup.tx_user_portal.utils.Enums.RequestStatus;
 import jakarta.persistence.criteria.JoinType;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,21 +16,24 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
+import java.util.Optional;
+
 @Service
 public class SuperAdminService {
     private final RequestRepository requestRepository;
     private final UserRepository userRepository;
     private final UserDetailsRepository userDetailsRepository;
     private final RoleRepository roleRepository;
+    private final OrganizationRepository organizationRepository;
 
     @Autowired
-    public SuperAdminService(RequestRepository requestRepository, UserRepository userRepository, UserDetailsRepository userDetailsRepository, RoleRepository roleRepository) {
+    public SuperAdminService(RequestRepository requestRepository, UserRepository userRepository, UserDetailsRepository userDetailsRepository, RoleRepository roleRepository, OrganizationRepository organizationRepository) {
         this.requestRepository = requestRepository;
         this.userRepository = userRepository;
         this.userDetailsRepository = userDetailsRepository;
         this.roleRepository = roleRepository;
+        this.organizationRepository = organizationRepository;
     }
-
 
     public Page<Request> getAllPendingRequests(int pageNumber, int pageSize) {
         Pageable pageable = PageRequest.of(pageNumber, pageSize);
@@ -66,4 +70,41 @@ public class SuperAdminService {
         return pagedResult;
     }
 
+    /**
+     * Function to add/ create a new organization
+     */
+    public void addNewOrganization(NewOrganizationRequestModel requestModel){
+
+        //check if organization already exists
+        String org_name = requestModel.getOrganization_name();
+        Optional<Organization> organizationOptional = organizationRepository.findByOrganizationName(org_name);
+
+        if(organizationOptional.isPresent()){
+            throw new IllegalArgumentException("ORGANIZATION PROVIDED ALREADY EXISTS " + org_name);
+        }else{
+            Organization newOrg = new Organization();
+            newOrg.setOrganization_name(org_name);
+            organizationRepository.save(newOrg);
+        }
+    }
+
+    /**
+     * Function to add/ create a new role
+     */
+    public void addNewRole(NewRoleRequestModel requestModel){
+/*
+        //check if role already exists
+        String role_name = requestModel.getRole_name();
+        Optional<Role> roleOptional = roleRepository.findByRoleRoleName(role_name);
+
+        if(roleOptional.isPresent()){
+            throw new IllegalArgumentException("ROLE PROVIDED ALREADY EXISTS " + role_name);
+        }else{
+            Role newRole = new Role();
+            newRole.setRole_name(role_name);
+            roleRepository.save(newRole);
+        }
+
+ */
+    }
 }

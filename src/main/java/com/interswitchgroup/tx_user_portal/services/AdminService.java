@@ -208,18 +208,18 @@ public class AdminService {
         LocalDateTime endDate = null;
 
         switch (filter) {
-            case "today":
+            case "TODAY":
                 endDate = startDate.with(LocalDateTime.MAX);
                 break;
-            case "past7Days":
+            case "PAST_7_DAYS":
                 endDate = startDate;
                 startDate = startDate.minusDays(7);
                 break;
-            case "past30Days":
+            case "PAST_30_DAYS":
                 endDate = startDate;
                 startDate = startDate.minusDays(30);
                 break;
-            case "past90Days":
+            case "PAST_90_DAYS":
                 endDate = startDate;
                 startDate = startDate.minusDays(90);
                 break;
