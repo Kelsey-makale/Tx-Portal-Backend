@@ -3,6 +3,7 @@ package com.interswitchgroup.tx_user_portal.controllers;
 import com.interswitchgroup.tx_user_portal.entities.Request;
 import com.interswitchgroup.tx_user_portal.entities.User;
 import com.interswitchgroup.tx_user_portal.entities.UserDetails;
+import com.interswitchgroup.tx_user_portal.models.request.CommentRequestModel;
 import com.interswitchgroup.tx_user_portal.models.request.UpdateRequestStatusRequestModel;
 import com.interswitchgroup.tx_user_portal.services.AdminService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -35,6 +36,12 @@ public class AdminController {
     @PutMapping("/update-request/{request_id}/{request_status}")
     public ResponseEntity<String> updateRequest(@PathVariable long request_id, @PathVariable String request_status){
         adminService.UpdateRequestStatus(request_id, request_status);
+        return new ResponseEntity<>("Request updated successfully", HttpStatus.OK);
+    }
+
+    @PutMapping("/update-request/{request_id}/{request_status}/{comment}")
+    public ResponseEntity<String> updateRequestWithComment(@PathVariable long request_id, @PathVariable String request_status, @PathVariable String comment){
+        adminService.UpdateRequestStatusWithComment(request_id, request_status, comment);
         return new ResponseEntity<>("Request updated successfully", HttpStatus.OK);
     }
 

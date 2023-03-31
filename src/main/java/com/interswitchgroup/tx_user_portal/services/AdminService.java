@@ -150,6 +150,63 @@ public class AdminService {
 
 
     /**
+     * This function approves/rejects one request at a time with a comment.
+     * @param requestId
+     * @param request_status
+     */
+    public void UpdateRequestStatusWithComment(long requestId, String request_status, String comment){
+        //check if that request exists on the db
+        Optional<Request> requestOptional = requestRepository.findRequestByRequestId(requestId);
+        User userObj = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+
+        if(requestOptional.isEmpty()){
+            throw new IllegalArgumentException("Request not found: " + requestId);
+        }
+        else{
+            Request foundRequest = requestOptional.get();
+            if(request_status.equals(RequestStatus.APPROVED.name())){
+
+                foundRequest.setRequestStatus(RequestStatus.APPROVED);
+                foundRequest.setDateUpdated(LocalDateTime.now());
+                foundRequest.setApprover_id(userObj.getUser_id());
+
+                //update users roles as well
+                Set<Role> requestRoles = foundRequest.getRoles();
+                User requestUser = foundRequest.getUser();
+                Set<Role> myRoles = requestUser.getRoles();
+
+                //avoiding repetition
+                myRoles.addAll(requestRoles);
+
+                //save those users roles
+                requestUser.setRoles(myRoles);
+
+            }
+            else if(request_status.equals(RequestStatus.REJECTED.name())){
+                List<Comment> commentList = new ArrayList<>();
+                foundRequest.setRequestStatus(RequestStatus.REJECTED);
+                foundRequest.setDateUpdated(LocalDateTime.now());
+
+                //create a comment
+                Comment adminComment = new Comment(
+                        userObj,
+                        comment,
+                        LocalDateTime.now()
+                );
+                commentList.add(adminComment);
+                foundRequest.setComment(commentList);
+            }
+            else{
+                throw new IllegalArgumentException("REQUEST VALUE PASSED IS INCORRECT " + request_status);
+            }
+            requestRepository.save(foundRequest);
+        }
+
+    }
+
+
+
+    /**
      * Approve/Reject multiple requests at the same time.
      * @param requestModelList
      */
@@ -229,6 +286,11 @@ public class AdminService {
     }
 
 
+    /**
+     * Admin can enable or disable a user from logging in and making requests.
+     * @param user_id
+     * @param account_status
+     */
     public void UpdateUserAccountStatus(long user_id, String account_status) {
         //check if user exists on the db
         Optional<User> userOptional = userRepository.findUserByUserId(user_id);

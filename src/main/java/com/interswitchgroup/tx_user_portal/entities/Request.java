@@ -33,6 +33,11 @@ public class Request {
     private Set<Role> roles;
 
 
+    @OneToMany(cascade = CascadeType.ALL)
+    @JoinColumn(name = "requestId", referencedColumnName = "requestId")
+    private List<Comment> comment;
+
+
     @Enumerated(EnumType.STRING)
     private RequestStatus requestStatus;
 
@@ -78,16 +83,6 @@ public class Request {
     public void setUser(User user) {
         this.user = user;
     }
-/*
-    public List<RequestRole> getRequestRoles() {
-        return requestRoles;
-    }
-
-    public void setRequestRoles(List<RequestRole> requestRoles) {
-        this.requestRoles = requestRoles;
-    }
-
- */
 
     public RequestStatus getRequestStatus() {
         return requestStatus;
@@ -119,12 +114,19 @@ public class Request {
         this.approver_id = approver_id;
     }
 
-
     public long getOrganizationId() {
         return organizationId;
     }
 
     public void setOrganizationId(long organizationId) {
         this.organizationId = organizationId;
+    }
+
+    public List<Comment> getComment() {
+        return comment;
+    }
+
+    public void setComment(List<Comment> comment) {
+        this.comment = comment;
     }
 }
