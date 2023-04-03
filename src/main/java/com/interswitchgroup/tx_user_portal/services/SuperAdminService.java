@@ -1,22 +1,26 @@
 package com.interswitchgroup.tx_user_portal.services;
 
-import com.interswitchgroup.tx_user_portal.entities.Organization;
-import com.interswitchgroup.tx_user_portal.entities.Request;
-import com.interswitchgroup.tx_user_portal.entities.Role;
-import com.interswitchgroup.tx_user_portal.entities.User;
+import com.interswitchgroup.tx_user_portal.entities.*;
+import com.interswitchgroup.tx_user_portal.models.request.AdminSignUpRequestModel;
 import com.interswitchgroup.tx_user_portal.models.request.NewOrganizationRequestModel;
 import com.interswitchgroup.tx_user_portal.models.request.NewRoleRequestModel;
+import com.interswitchgroup.tx_user_portal.models.request.UserSignUpRequestModel;
+import com.interswitchgroup.tx_user_portal.models.response.UserResponseModel;
 import com.interswitchgroup.tx_user_portal.repositories.*;
 import com.interswitchgroup.tx_user_portal.utils.Enums.RequestStatus;
+import com.interswitchgroup.tx_user_portal.utils.Enums.UserPermission;
 import jakarta.persistence.criteria.JoinType;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
+import org.springframework.http.HttpStatus;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import java.util.Optional;
+import java.time.LocalDateTime;
+import java.util.*;
 
 @Service
 public class SuperAdminService {
@@ -35,40 +39,8 @@ public class SuperAdminService {
         this.organizationRepository = organizationRepository;
     }
 
-    public Page<Request> getAllPendingRequests(int pageNumber, int pageSize) {
-        Pageable pageable = PageRequest.of(pageNumber, pageSize);
-        return requestRepository.findAll(fetchRolesAndUser().and(isPending()), pageable);
-    }
-
-    /**
-     This method returns a JPA Specification that is used to eagerly
-     fetch the associated user and role entities for each request
-     **/
-    private static Specification<Request> fetchRolesAndUser() {
-        return (root, query, builder) -> {
-            // fetch user
-            root.fetch("user", JoinType.LEFT);
-            // fetch role using join
-            root.fetch("roleIds", JoinType.LEFT);
-            // return the root entity
-            query.distinct(true);
-            return builder.conjunction();
-        };
-    }
-
-    /**
-     * This method returns a JPA Specification that is used to eagerly fetch the requests marked as PENDING
-     **/
-    private static Specification<Request> isPending() {
-        return (root, query, builder) -> builder.equal(root.get("requestStatus"), RequestStatus.PENDING);
-    }
-
-
-    public Page<User> getAllUsers(int pageNumber, int pageSize) {
-        Pageable paging = PageRequest.of(pageNumber, pageSize);
-        Page<User> pagedResult = userRepository.findAll(paging);
-        return pagedResult;
-    }
+    @Autowired
+    PasswordEncoder passwordEncoder;
 
     /**
      * Function to add/ create a new organization
@@ -107,4 +79,74 @@ public class SuperAdminService {
 
  */
     }
+
+
+    /**
+     * Function to create a bank admin.
+     * For now their password is their office number.
+     */
+    public UserResponseModel createBankAdmin(AdminSignUpRequestModel userSignUpRequestModel){
+        UserResponseModel responseModel;
+        Map<String, Object> responseBody = new HashMap<>();
+        try {
+            Optional<User> userOptional = userRepository.findUserByEmailAddress(userSignUpRequestModel.getEmail_address());
+            Optional<Organization> organizationOptional = organizationRepository.findByOrganizationId(userSignUpRequestModel.getOrganization_id());
+
+            if (userOptional.isPresent()) {
+                System.out.println("USER ALREADY EXISTS");
+                throw new IllegalArgumentException("A user with this email already exists: " + userSignUpRequestModel.getEmail_address());
+            }
+            if (organizationOptional.isEmpty()) {
+                throw new IllegalArgumentException("Organization not found: " + userSignUpRequestModel.getOrganization_id());
+            }
+            else {
+                //todo:Change default password from office number to sth else
+                String encPass = passwordEncoder.encode(userSignUpRequestModel.getOffice_number());
+                User newUser = new User();
+
+                List<Role> fetchedRoles = roleRepository.findAllById(userSignUpRequestModel.getRoleIds());
+                Set<Role> set = new HashSet<>(fetchedRoles);
+
+                newUser.setEmailAddress(userSignUpRequestModel.getEmail_address());
+                newUser.setPassword(encPass);
+                newUser.setRoles(set);
+                newUser.setPermission( UserPermission.BANK_ADMIN);
+                newUser.setDateCreated(LocalDateTime.now());
+                newUser.setDateUpdated(LocalDateTime.now());
+
+
+                //2.a Add user details to db
+                UserDetails newUserDetails = new UserDetails(
+                        userSignUpRequestModel.getFirst_name(),
+                        userSignUpRequestModel.getSecond_name(),
+                        userSignUpRequestModel.getPhone_number(),
+                        userSignUpRequestModel.getDesignation(),
+                        userSignUpRequestModel.getDepartment(),
+                        userSignUpRequestModel.getOffice_number(),
+                        organizationOptional.get(),
+                        LocalDateTime.now(),
+                        LocalDateTime.now());
+                newUserDetails.setVerified(true);
+
+                newUser.setUserDetails(newUserDetails);
+                userRepository.save(newUser);
+
+            }
+
+            responseModel = new UserResponseModel(
+                    HttpStatus.OK.value(),
+                    "User registered Successfully"
+            );
+        }
+        catch(IllegalArgumentException e){
+            responseBody.put("error", e.getMessage());
+            responseModel = new UserResponseModel(
+                    HttpStatus.EXPECTATION_FAILED.value(),
+                    "Failed to register user",
+                    Optional.of(responseBody)
+            );
+        }
+        return responseModel;
+    }
+
 }

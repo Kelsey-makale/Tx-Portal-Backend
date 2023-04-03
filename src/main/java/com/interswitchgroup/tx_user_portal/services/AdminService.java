@@ -36,13 +36,34 @@ public class AdminService {
         this.roleRepository = roleRepository;
     }
 
+    /**
+     * Function to fetch all pending requests
+     * If user is an BANK ADMIN
+     *  fetch only their organizations pending requests
+     * ELSE IF user is SUPER_ADMIN
+     *  fetch all requests that have been approved
+     * @param pageNumber
+     * @param pageSize
+     * @return
+     */
     public Page<Request> getAllPendingRequests(int pageNumber, int pageSize) {
         try{
             User currentAdmin = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-            long org_id = currentAdmin.getUserDetails().getOrganization().getOrganization_id();
+            String user_permission = String.valueOf(currentAdmin.getPermission());
 
-            Pageable pageable = PageRequest.of(pageNumber, pageSize);
-            return requestRepository.findAll(isPendingForAdmin(org_id), pageable);
+            if(user_permission.equals("ADMIN") ){
+                Pageable pageable = PageRequest.of(pageNumber, pageSize);
+                return requestRepository.findAll(isApproved(), pageable);
+            }
+            else if (user_permission.equals("BANK_ADMIN")) {
+                long org_id = currentAdmin.getUserDetails().getOrganization().getOrganization_id();
+                Pageable pageable = PageRequest.of(pageNumber, pageSize);
+                return requestRepository.findAll(isPendingForAdmin(org_id), pageable);
+            }
+            else{
+                throw new IllegalArgumentException("User is not authorized to make this request");
+            }
+
         }catch(Exception e){
             e.printStackTrace();
             return null;
@@ -61,28 +82,47 @@ public class AdminService {
         };
     }
 
-    public Map<String, Object> getSpecificUser(long user_id){
-
-        Optional<User> userOptional = userRepository.findUserByUserId(user_id);
-        if(userOptional.isEmpty()){
-            throw new IllegalArgumentException("user not found:");
-        }
-        User user = userOptional.get();
-
-        Map<String, Object> response = new HashMap<>();
-        response.put("data", user);
-        return response;
-
+    /**
+     * This method returns a JPA Specification that is used to eagerly fetch the requests marked as APPROVED
+     **/
+    private static Specification<Request> isApproved() {
+        return (root, query, builder) -> {
+            return builder.and(
+                    builder.equal(root.get("requestStatus"), RequestStatus.APPROVED)
+            );
+        };
     }
 
+
+    /**
+     * Function to fetch all users
+     *      * If user is an BANK ADMIN
+     *      *  fetch only their organizations users
+     *      * ELSE IF user is SUPER_ADMIN
+     *      *  fetch all users
+     * @param pageNumber
+     * @param pageSize
+     * @return
+     */
     public Page<User> getAllUsers(int pageNumber, int pageSize) {
         try{
             User currentAdmin = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-            long org_id = currentAdmin.getUserDetails().getOrganization().getOrganization_id();
+            String user_permission = String.valueOf(currentAdmin.getPermission());
 
-            Pageable paging = PageRequest.of(pageNumber, pageSize);
-            Page<User> pagedResult = userRepository.findAll(forAdmin(org_id), paging);
-            return pagedResult;
+            if(user_permission.equals("ADMIN") ){
+                Pageable pageable = PageRequest.of(pageNumber, pageSize);
+                return userRepository.findAll(pageable);
+            }
+            else if (user_permission.equals("BANK_ADMIN")) {
+                long org_id = currentAdmin.getUserDetails().getOrganization().getOrganization_id();
+                Pageable paging = PageRequest.of(pageNumber, pageSize);
+                Page<User> pagedResult = userRepository.findAll(forAdmin(org_id), paging);
+                return pagedResult;
+            }
+            else{
+                throw new IllegalArgumentException("User is not authorized to make this request");
+            }
+
         }catch(Exception e){
             e.printStackTrace();
             return null;
@@ -117,32 +157,55 @@ public class AdminService {
         }
         else{
             User userObj = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+            String user_permission = String.valueOf(userObj.getPermission());
             Request foundRequest = requestOptional.get();
-            if(request_status.equals(RequestStatus.APPROVED.name())){
 
-                foundRequest.setRequestStatus(RequestStatus.APPROVED);
-                foundRequest.setDateUpdated(LocalDateTime.now());
-                foundRequest.setApprover_id(userObj.getUser_id());
 
-                //update users roles as well
-                Set<Role> requestRoles = foundRequest.getRoles();
-                User requestUser = foundRequest.getUser();
-                Set<Role> myRoles = requestUser.getRoles();
+            if(user_permission.equals("ADMIN") ){
+                if(request_status.equals(RequestStatus.APPROVED.name())){
 
-                //avoiding repetition
-                 myRoles.addAll(requestRoles);
+                    foundRequest.setRequestStatus(RequestStatus.CLOSED);
+                    foundRequest.setDateUpdated(LocalDateTime.now());
 
-                //save those users roles
-                requestUser.setRoles(myRoles);
+                    //update users roles as well
+                    Set<Role> requestRoles = foundRequest.getRoles();
+                    User requestUser = foundRequest.getUser();
+                    Set<Role> myRoles = requestUser.getRoles();
 
+                    //avoiding repetition
+                    myRoles.addAll(requestRoles);
+
+                    //save those users roles
+                    requestUser.setRoles(myRoles);
+
+                }
+                else if(request_status.equals(RequestStatus.REJECTED.name())){
+                    foundRequest.setRequestStatus(RequestStatus.REJECTED);
+                    foundRequest.setDateUpdated(LocalDateTime.now());
+                }
+                else{
+                    throw new IllegalArgumentException("REQUEST VALUE PASSED IS INCORRECT " + request_status);
+                }
             }
-            else if(request_status.equals(RequestStatus.REJECTED.name())){
-                foundRequest.setRequestStatus(RequestStatus.REJECTED);
-                foundRequest.setDateUpdated(LocalDateTime.now());
+            else if (user_permission.equals("BANK_ADMIN")) {
+                if(request_status.equals(RequestStatus.APPROVED.name())){
+                    foundRequest.setRequestStatus(RequestStatus.APPROVED);
+                    foundRequest.setDateUpdated(LocalDateTime.now());
+                    foundRequest.setApprover_id(userObj.getUser_id());
+                }
+                else if(request_status.equals(RequestStatus.REJECTED.name())){
+                    foundRequest.setRequestStatus(RequestStatus.REJECTED);
+                    foundRequest.setDateUpdated(LocalDateTime.now());
+                }
+                else{
+                    throw new IllegalArgumentException("REQUEST VALUE PASSED IS INCORRECT " + request_status);
+                }
             }
             else{
-                throw new IllegalArgumentException("REQUEST VALUE PASSED IS INCORRECT " + request_status);
+                throw new IllegalArgumentException("User is not authorized to make this request");
             }
+
+
             requestRepository.save(foundRequest);
         }
 
@@ -164,25 +227,7 @@ public class AdminService {
         }
         else{
             Request foundRequest = requestOptional.get();
-            if(request_status.equals(RequestStatus.APPROVED.name())){
-
-                foundRequest.setRequestStatus(RequestStatus.APPROVED);
-                foundRequest.setDateUpdated(LocalDateTime.now());
-                foundRequest.setApprover_id(userObj.getUser_id());
-
-                //update users roles as well
-                Set<Role> requestRoles = foundRequest.getRoles();
-                User requestUser = foundRequest.getUser();
-                Set<Role> myRoles = requestUser.getRoles();
-
-                //avoiding repetition
-                myRoles.addAll(requestRoles);
-
-                //save those users roles
-                requestUser.setRoles(myRoles);
-
-            }
-            else if(request_status.equals(RequestStatus.REJECTED.name())){
+            if(request_status.equals(RequestStatus.REJECTED.name())){
                 List<Comment> commentList = new ArrayList<>();
                 foundRequest.setRequestStatus(RequestStatus.REJECTED);
                 foundRequest.setDateUpdated(LocalDateTime.now());
@@ -311,5 +356,24 @@ public class AdminService {
            }
            userRepository.save(user);
         }
+    }
+
+    /**
+     * Fetch user based on their ID
+     * @param user_id
+     * @return
+     */
+    public Map<String, Object> getSpecificUser(long user_id){
+
+        Optional<User> userOptional = userRepository.findUserByUserId(user_id);
+        if(userOptional.isEmpty()){
+            throw new IllegalArgumentException("user not found:");
+        }
+        User user = userOptional.get();
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("data", user);
+        return response;
+
     }
 }

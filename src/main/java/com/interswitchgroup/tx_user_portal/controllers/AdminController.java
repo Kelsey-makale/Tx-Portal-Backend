@@ -59,7 +59,7 @@ public class AdminController {
 
 
     @GetMapping("/pending-requests")
-    public ResponseEntity<Page<Request>> getPendingRequests(@RequestParam(defaultValue = "0") int pageNumber, @RequestParam(defaultValue = "1") int pageSize){
+    public ResponseEntity<Page<Request>> getPendingRequests(@RequestParam(defaultValue = "0") int pageNumber, @RequestParam(defaultValue = "10") int pageSize){
         Page<Request> allRequests = adminService.getAllPendingRequests(pageNumber, pageSize);
         return new ResponseEntity<>(allRequests, HttpStatus.OK);
     }
@@ -70,7 +70,7 @@ public class AdminController {
     }
 
     @GetMapping("/users")
-    public ResponseEntity<Page<User>> getAllUsers(@RequestParam(defaultValue = "0") int pageNumber, @RequestParam(defaultValue = "1") int pageSize){
+    public ResponseEntity<Page<User>> getAllUsers(@RequestParam(defaultValue = "0") int pageNumber, @RequestParam(defaultValue = "10") int pageSize){
         Page<User> allUsers = adminService.getAllUsers(pageNumber, pageSize);
         return new ResponseEntity<>(allUsers, HttpStatus.OK);
     }
