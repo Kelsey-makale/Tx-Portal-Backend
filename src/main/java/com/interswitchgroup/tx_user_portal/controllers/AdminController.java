@@ -74,4 +74,10 @@ public class AdminController {
         Page<User> allUsers = adminService.getAllUsers(pageNumber, pageSize);
         return new ResponseEntity<>(allUsers, HttpStatus.OK);
     }
+
+    @GetMapping("/search/requests")
+    public ResponseEntity<Page<Request>> fuzzySearchRequest(@RequestParam String searchTerm, @RequestParam(defaultValue = "0") int pageNumber, @RequestParam(defaultValue = "10") int pageSize){
+        return new ResponseEntity<>(adminService.requestsFuzzySearch(searchTerm, pageNumber, pageSize), HttpStatus.OK);
+    }
 }
+

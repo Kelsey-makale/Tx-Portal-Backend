@@ -10,6 +10,7 @@ import com.interswitchgroup.tx_user_portal.utils.Enums.AccountStatus;
 import com.interswitchgroup.tx_user_portal.utils.Enums.RequestStatus;
 import jakarta.persistence.criteria.Join;
 import jakarta.persistence.criteria.JoinType;
+import jakarta.persistence.criteria.Predicate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -64,7 +65,8 @@ public class AdminService {
                 throw new IllegalArgumentException("User is not authorized to make this request");
             }
 
-        }catch(Exception e){
+        }
+        catch(Exception e){
             e.printStackTrace();
             return null;
         }
@@ -211,7 +213,6 @@ public class AdminService {
 
     }
 
-
     /**
      * This function approves/rejects one request at a time with a comment.
      * @param requestId
@@ -248,7 +249,6 @@ public class AdminService {
         }
 
     }
-
 
 
     /**
@@ -376,4 +376,37 @@ public class AdminService {
         return response;
 
     }
+
+
+    public Page<Request> requestsFuzzySearch(String searchTerm, int pageNumber, int pageSize){
+        try {
+            User currentAdmin = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+            String user_permission = String.valueOf(currentAdmin.getPermission());
+
+            if(user_permission.equals("ADMIN") ){
+                Pageable pageable = PageRequest.of(pageNumber, pageSize);
+                return requestRepository.searchApprovedRequests(searchTerm, pageable);
+            }
+            else if (user_permission.equals("BANK_ADMIN")) {
+                long org_id = currentAdmin.getUserDetails().getOrganization().getOrganization_id();
+                Pageable pageable = PageRequest.of(pageNumber, pageSize);
+                return requestRepository.searchPendingRequests(org_id, searchTerm, pageable);
+            }
+            else if(user_permission.equals("BANK_USER")){
+                long user_id = currentAdmin.getUser_id();
+                Pageable pageable = PageRequest.of(pageNumber, pageSize);
+                return requestRepository.searchMyRequests(user_id, searchTerm, pageable);
+            }
+            else{
+                throw new IllegalArgumentException("User is not authorized to make this request");
+            }
+
+        }
+        catch(Exception e){
+            e.printStackTrace();
+            return null;
+        }
+
+    }
+
 }

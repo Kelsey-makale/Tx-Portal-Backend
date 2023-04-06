@@ -392,7 +392,27 @@ public class GenericService {
     }
 
     public Page<User> usersFuzzySearch(String searchTerm, int pageNumber, int pageSize){
-        Pageable pageable = PageRequest.of(pageNumber, pageSize);
-        return userRepository.searchByMultipleColumns(searchTerm, pageable);
+        try{
+            User currentAdmin = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+            String user_permission = String.valueOf(currentAdmin.getPermission());
+
+            if(user_permission.equals("ADMIN") ){
+                Pageable pageable = PageRequest.of(pageNumber, pageSize);
+                return userRepository.searchAllUsers(searchTerm, pageable);
+            }
+            else if (user_permission.equals("BANK_ADMIN")) {
+                long org_id = currentAdmin.getUserDetails().getOrganization().getOrganization_id();
+                Pageable pageable = PageRequest.of(pageNumber, pageSize);
+                return userRepository.searchMyOrgUsers(org_id, searchTerm, pageable);
+            }
+            else{
+                throw new IllegalArgumentException("User is not authorized to make this request");
+            }
+        }
+        catch(Exception e){
+            e.printStackTrace();
+            return null;
+        }
+
     }
 }

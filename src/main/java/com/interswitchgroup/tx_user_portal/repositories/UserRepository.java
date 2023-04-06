@@ -40,6 +40,35 @@ public interface UserRepository extends JpaRepository<User, Long>, JpaSpecificat
                     "OR ud.department LIKE %:searchTerm% " +
                     "OR r.role_name LIKE %:searchTerm% " +
                     "OR ud.officeNumber LIKE %:searchTerm%")
-    Page<User> searchByMultipleColumns(@Param("searchTerm") String searchTerm, Pageable pageable);
+    Page<User> searchAllUsers(@Param("searchTerm") String searchTerm, Pageable pageable);
+
+
+    @Query(value = "SELECT DISTINCT u FROM User u " +
+            "LEFT JOIN u.userDetails ud " +
+            "LEFT JOIN ud.organization o " +
+            "LEFT JOIN u.roles r " +
+            "WHERE o.organizationId = :orgId " +
+            "AND(u.emailAddress LIKE %:searchTerm% " +
+            "OR ud.firstName LIKE %:searchTerm% " +
+            "OR ud.secondName LIKE %:searchTerm% " +
+            "OR ud.phoneNumber LIKE %:searchTerm% " +
+            "OR ud.designation LIKE %:searchTerm% " +
+            "OR ud.department LIKE %:searchTerm% " +
+            "OR r.role_name LIKE %:searchTerm% " +
+            "OR ud.officeNumber LIKE %:searchTerm%)",
+            countQuery = "SELECT COUNT(DISTINCT u) FROM User u " +
+                    "LEFT JOIN u.userDetails ud " +
+                    "LEFT JOIN ud.organization o " +
+                    "LEFT JOIN u.roles r " +
+                    "WHERE o.organizationId = :orgId " +
+                    "AND(u.emailAddress LIKE %:searchTerm% " +
+                    "OR ud.firstName LIKE %:searchTerm% " +
+                    "OR ud.secondName LIKE %:searchTerm% " +
+                    "OR ud.phoneNumber LIKE %:searchTerm% " +
+                    "OR ud.designation LIKE %:searchTerm% " +
+                    "OR ud.department LIKE %:searchTerm% " +
+                    "OR r.role_name LIKE %:searchTerm% " +
+                    "OR ud.officeNumber LIKE %:searchTerm%)")
+    Page<User> searchMyOrgUsers(@Param("orgId") long orgId, @Param("searchTerm") String searchTerm, Pageable pageable);
 
 }
