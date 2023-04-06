@@ -28,9 +28,6 @@ public class SuperAdminController {
         this.adminService = adminService;
     }
 
-
-
-
     @PutMapping("/update-permission/{user_id}/{permission}")
     public ResponseEntity<String> updatePermission(@PathVariable long user_id, @PathVariable String permission){
         return new ResponseEntity<>("Permission updated successfully", HttpStatus.OK);

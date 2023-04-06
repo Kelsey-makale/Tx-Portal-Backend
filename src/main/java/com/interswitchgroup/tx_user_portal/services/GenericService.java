@@ -390,4 +390,9 @@ public class GenericService {
             );
         };
     }
+
+    public Page<User> usersFuzzySearch(String searchTerm, int pageNumber, int pageSize){
+        Pageable pageable = PageRequest.of(pageNumber, pageSize);
+        return userRepository.searchByMultipleColumns(searchTerm, pageable);
+    }
 }

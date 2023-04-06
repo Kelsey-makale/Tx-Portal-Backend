@@ -1,13 +1,17 @@
 package com.interswitchgroup.tx_user_portal.controllers;
 
+import com.interswitchgroup.tx_user_portal.entities.User;
 import com.interswitchgroup.tx_user_portal.models.request.*;
 import com.interswitchgroup.tx_user_portal.models.response.UserResponseModel;
 import com.interswitchgroup.tx_user_portal.services.GenericService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 import java.util.Map;
 
 @RestController
@@ -60,7 +64,6 @@ public class GenericController {
     public ResponseEntity<UserResponseModel> getOrganizationData(){
         return new ResponseEntity<>(genericService.getOrganizationData(), HttpStatus.OK);
     }
-
 
 
 }

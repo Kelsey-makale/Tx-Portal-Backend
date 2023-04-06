@@ -12,6 +12,7 @@ import java.util.Set;
 
 @Entity
 public class User implements org.springframework.security.core.userdetails.UserDetails {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long userId;

@@ -1,6 +1,7 @@
 package com.interswitchgroup.tx_user_portal.controllers;
 
 import com.interswitchgroup.tx_user_portal.entities.Request;
+import com.interswitchgroup.tx_user_portal.entities.User;
 import com.interswitchgroup.tx_user_portal.models.RequestWithUserAndRolesDto;
 import com.interswitchgroup.tx_user_portal.models.request.UserRoleRequestModel;
 import com.interswitchgroup.tx_user_portal.models.response.UserResponseModel;
@@ -40,4 +41,10 @@ public class UserController {
        Page<Request> allRequests = genericService.getMyRequests(pageNumber,pageSize);
         return new ResponseEntity<>(allRequests, HttpStatus.OK);
     }
+
+    @GetMapping("/search/users")
+    public ResponseEntity<Page<User>> fuzzySearchUser(@RequestParam String searchTerm, @RequestParam(defaultValue = "0") int pageNumber, @RequestParam(defaultValue = "10") int pageSize){
+        return new ResponseEntity<>(genericService.usersFuzzySearch(searchTerm, pageNumber, pageSize), HttpStatus.OK);
+    }
+
 }

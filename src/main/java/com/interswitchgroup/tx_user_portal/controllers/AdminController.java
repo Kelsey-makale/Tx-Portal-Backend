@@ -74,5 +74,4 @@ public class AdminController {
         Page<User> allUsers = adminService.getAllUsers(pageNumber, pageSize);
         return new ResponseEntity<>(allUsers, HttpStatus.OK);
     }
-
 }
