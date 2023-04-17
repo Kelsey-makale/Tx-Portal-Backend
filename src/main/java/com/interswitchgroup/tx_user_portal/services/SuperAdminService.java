@@ -4,17 +4,10 @@ import com.interswitchgroup.tx_user_portal.entities.*;
 import com.interswitchgroup.tx_user_portal.models.request.AdminSignUpRequestModel;
 import com.interswitchgroup.tx_user_portal.models.request.NewOrganizationRequestModel;
 import com.interswitchgroup.tx_user_portal.models.request.NewRoleRequestModel;
-import com.interswitchgroup.tx_user_portal.models.request.UserSignUpRequestModel;
 import com.interswitchgroup.tx_user_portal.models.response.UserResponseModel;
 import com.interswitchgroup.tx_user_portal.repositories.*;
-import com.interswitchgroup.tx_user_portal.utils.Enums.RequestStatus;
 import com.interswitchgroup.tx_user_portal.utils.Enums.UserPermission;
-import jakarta.persistence.criteria.JoinType;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -29,14 +22,16 @@ public class SuperAdminService {
     private final UserDetailsRepository userDetailsRepository;
     private final RoleRepository roleRepository;
     private final OrganizationRepository organizationRepository;
+    private final EmailService emailService;
 
     @Autowired
-    public SuperAdminService(RequestRepository requestRepository, UserRepository userRepository, UserDetailsRepository userDetailsRepository, RoleRepository roleRepository, OrganizationRepository organizationRepository) {
+    public SuperAdminService(RequestRepository requestRepository, UserRepository userRepository, UserDetailsRepository userDetailsRepository, RoleRepository roleRepository, OrganizationRepository organizationRepository, EmailService emailService) {
         this.requestRepository = requestRepository;
         this.userRepository = userRepository;
         this.userDetailsRepository = userDetailsRepository;
         this.roleRepository = roleRepository;
         this.organizationRepository = organizationRepository;
+        this.emailService = emailService;
     }
 
     @Autowired
@@ -130,6 +125,11 @@ public class SuperAdminService {
 
                 newUser.setUserDetails(newUserDetails);
                 userRepository.save(newUser);
+
+                //3. Send user email containing the OTP
+                emailService.sendMail(newUser.getEmailAddress(),
+                        "Account Created",
+                        "Your account has been successfully created on the TX User & Role Management Portal. Reach out to the InfoSec team to get your login credentials.");
 
             }
 

@@ -1,6 +1,5 @@
 package com.interswitchgroup.tx_user_portal.services;
 
-import jakarta.mail.MessagingException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,7 +22,7 @@ public class EmailService {
             mailMessage.setTo(to);
             mailMessage.setSubject(subject);
             mailMessage.setText(body);
-            mailMessage.setFrom("sianwamak@gmail.com"); //todo: get proper email
+            mailMessage.setFrom("support.ke@quickteller.com"); //todo: get proper email
 
             mailSender.send(mailMessage);
 
@@ -32,6 +31,24 @@ public class EmailService {
             throw new IllegalStateException("Failed to send email");
         }
 
+    }
+
+    @Async
+    public void sendMailWithCC(String to, String subject, String body, String[] cc){
+        try{
+            SimpleMailMessage mailMessage = new SimpleMailMessage();
+            mailMessage.setTo(to);
+            mailMessage.setSubject(subject);
+            mailMessage.setText(body);
+            mailMessage.setCc(cc);
+            mailMessage.setFrom("support.ke@quickteller.com"); //todo: get proper email
+
+            mailSender.send(mailMessage);
+
+        }catch(Exception e){
+            LOGGER.error("Failed to send email", e);
+            throw new IllegalStateException("Failed to send email");
+        }
 
     }
 }

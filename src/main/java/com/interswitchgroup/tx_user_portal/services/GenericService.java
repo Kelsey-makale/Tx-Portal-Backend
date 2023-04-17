@@ -194,7 +194,7 @@ public class GenericService {
 
 
         //4. Send user email containing the OTP
-        //emailService.sendMail(user.getEmailAddress(), "Verify Account", "Your OTP is" + generatedOTP);
+        emailService.sendMail(user.getEmailAddress(), "Verify Account", "Your OTP is" + generatedOTP);
         System.out.println("YOUR OTP IS :: "+ generatedOTP);
     }
 
@@ -328,9 +328,6 @@ public class GenericService {
 
     public UserResponseModel makeRequest(UserRoleRequestModel requestModel){
         //todo: figure out how to handle duplicates. A user making the same request twice.
-        //todo: handle when the user is blocked (POSTPONE)
-        //todo: send email to info_sec and bank admin
-
         UserResponseModel responseModel;
         Map<String, Object> responseBody = new HashMap<>();
 
@@ -353,15 +350,26 @@ public class GenericService {
 
             responseModel = new UserResponseModel(
                     HttpStatus.OK.value(),
-                    "OTP sent successfully."
+                    "Request logged successfully."
             );
+
+            //todo: send email to info_sec and bank admin
+
+            //send email to bank user and cc bank admin(s).
+            String superAdminEmail = userRepository.getSuperAdmin();
+            List<String> bankAdminsEmails = userRepository.getMyAdmins(user.getUserDetails().getOrganization().getOrganization_id());
+
+            emailService.sendMailWithCC(superAdminEmail,
+                    "Request pending Approval",
+                    "A new request is pending your approval. Please review and take necessary action.",
+                    bankAdminsEmails.toArray(new String[0]));
 
 
         }catch(IllegalArgumentException e){
             responseBody.put("error", e.getMessage());
             responseModel = new UserResponseModel(
                     HttpStatus.EXPECTATION_FAILED.value(),
-                    "Failed to resend OTP",
+                    "Failed to log request",
                     Optional.of(responseBody)
             );
         }

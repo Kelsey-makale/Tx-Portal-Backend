@@ -9,8 +9,6 @@ import com.interswitchgroup.tx_user_portal.repositories.UserRepository;
 import com.interswitchgroup.tx_user_portal.utils.Enums.AccountStatus;
 import com.interswitchgroup.tx_user_portal.utils.Enums.RequestStatus;
 import jakarta.persistence.criteria.Join;
-import jakarta.persistence.criteria.JoinType;
-import jakarta.persistence.criteria.Predicate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -28,13 +26,15 @@ public class AdminService {
     private final UserRepository userRepository;
     private final UserDetailsRepository userDetailsRepository;
     private final RoleRepository roleRepository;
+    private final EmailService emailService;
 
     @Autowired
-    public AdminService(RequestRepository requestRepository, UserRepository userRepository, UserDetailsRepository userDetailsRepository, RoleRepository roleRepository) {
+    public AdminService(RequestRepository requestRepository, UserRepository userRepository, UserDetailsRepository userDetailsRepository, RoleRepository roleRepository, EmailService emailService) {
         this.requestRepository = requestRepository;
         this.userRepository = userRepository;
         this.userDetailsRepository = userDetailsRepository;
         this.roleRepository = roleRepository;
+        this.emailService = emailService;
     }
 
     /**
@@ -162,7 +162,6 @@ public class AdminService {
             String user_permission = String.valueOf(userObj.getPermission());
             Request foundRequest = requestOptional.get();
 
-
             if(user_permission.equals("ADMIN") ){
                 if(request_status.equals(RequestStatus.APPROVED.name())){
 
@@ -180,10 +179,30 @@ public class AdminService {
                     //save those users roles
                     requestUser.setRoles(myRoles);
 
+                    //send email to bank user and cc bank admin(s).
+                    String bankUserEmail = requestUser.getEmailAddress();
+                    List<String> bankAdminsEmails = userRepository.getMyAdmins(requestUser.getUserDetails().getOrganization().getOrganization_id());
+
+                    emailService.sendMailWithCC(bankUserEmail,
+                            "Request Status",
+                            "We are pleased to inform you that your recent request has been approved by the administrator. Please proceed with your desired action.",
+                            bankAdminsEmails.toArray(new String[0]));
+
                 }
                 else if(request_status.equals(RequestStatus.REJECTED.name())){
                     foundRequest.setRequestStatus(RequestStatus.REJECTED);
                     foundRequest.setDateUpdated(LocalDateTime.now());
+
+                    //send email to bank user and cc bank admin(s).
+                    User requestUser = foundRequest.getUser();
+                    String bankUserEmail = requestUser.getEmailAddress();
+                    List<String> bankAdminsEmails = userRepository.getMyAdmins(requestUser.getUserDetails().getOrganization().getOrganization_id());
+
+                    emailService.sendMailWithCC(bankUserEmail,
+                            "Request Status",
+                            "We regret to inform you that your recent request has been rejected by the InfoSec team. To view the reason for the rejection, please access your request on the portal.",
+                            bankAdminsEmails.toArray(new String[0]));
+
                 }
                 else{
                     throw new IllegalArgumentException("REQUEST VALUE PASSED IS INCORRECT " + request_status);
@@ -194,10 +213,34 @@ public class AdminService {
                     foundRequest.setRequestStatus(RequestStatus.APPROVED);
                     foundRequest.setDateUpdated(LocalDateTime.now());
                     foundRequest.setApprover_id(userObj.getUser_id());
+
+                    //send email to super admin and cc bank user.
+                    User requestUser = foundRequest.getUser();
+                    String bankUserEmail = requestUser.getEmailAddress();
+                    String superAdminEmail = userRepository.getSuperAdmin();
+                    List<String> ccRecipient = new ArrayList<>();
+                    ccRecipient.add(superAdminEmail);
+                    ccRecipient.add(userObj.getEmailAddress());
+
+                    emailService.sendMailWithCC(bankUserEmail,
+                            "Request Status",
+                            "We are pleased to inform you that your recent request has been approved by your bank administrator. Current status is pending closure by the InfoSec team.",
+                            ccRecipient.toArray(new String[0]));
+
+
                 }
                 else if(request_status.equals(RequestStatus.REJECTED.name())){
                     foundRequest.setRequestStatus(RequestStatus.REJECTED);
                     foundRequest.setDateUpdated(LocalDateTime.now());
+
+                    User user = foundRequest.getUser();
+
+                    //send email to bank user.
+                    emailService.sendMail(user.getEmailAddress(),
+                            "Request Status",
+                            "We regret to inform you that your recent request has been rejected by your bank administrator. To view the reason for the rejection, please access your request on the portal."
+                    );
+
                 }
                 else{
                     throw new IllegalArgumentException("REQUEST VALUE PASSED IS INCORRECT " + request_status);
@@ -206,7 +249,6 @@ public class AdminService {
             else{
                 throw new IllegalArgumentException("User is not authorized to make this request");
             }
-
 
             requestRepository.save(foundRequest);
         }
@@ -241,6 +283,17 @@ public class AdminService {
                 );
                 commentList.add(adminComment);
                 foundRequest.setComment(commentList);
+
+                //send email to bank admin(s) and cc bank user.
+                User requestUser = foundRequest.getUser();
+                String bankUserEmail = requestUser.getEmailAddress();
+                List<String> bankAdminsEmails = userRepository.getMyAdmins(requestUser.getUserDetails().getOrganization().getOrganization_id());
+
+                emailService.sendMailWithCC(bankUserEmail,
+                        "Request Status",
+                        "We regret to inform you that your recent request has been rejected by your admin. To view the reason for the rejection, please access your request on the portal.",
+                        bankAdminsEmails.toArray(new String[0]));
+
             }
             else{
                 throw new IllegalArgumentException("REQUEST VALUE PASSED IS INCORRECT " + request_status);
@@ -249,7 +302,6 @@ public class AdminService {
         }
 
     }
-
 
     /**
      * Approve/Reject multiple requests at the same time.
@@ -300,7 +352,6 @@ public class AdminService {
         }
     }
 
-
     /**
      * Filter requests by date
      * @return
@@ -347,6 +398,11 @@ public class AdminService {
            User user = userOptional.get();
            if(account_status.equals(AccountStatus.ENABLE.name())){
                user.getUserDetails().setVerified(true);
+
+               //send email to bank user.
+               emailService.sendMail(user.getEmailAddress(),
+                       "Account Enabled",
+                       "Your account has been successfully enabled by your administrator. You can now log in using the credentials you have set.");
            }
            else if(account_status.equals(AccountStatus.DISABLE.name())){
                user.getUserDetails().setVerified(false);

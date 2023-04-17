@@ -10,6 +10,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
 import java.util.Optional;
 
 @Repository
@@ -17,6 +18,22 @@ public interface UserRepository extends JpaRepository<User, Long>, JpaSpecificat
 
     Optional<User> findUserByEmailAddress (String emailAddress);
     Optional<User> findUserByUserId(long user_id);
+
+
+    @Query(value = "SELECT u.emailAddress FROM User u " +
+            "WHERE u.permission = 'ADMIN'"
+    )
+    String getSuperAdmin();
+
+
+    @Query(value = "SELECT u.emailAddress FROM User u " +
+            "LEFT JOIN u.userDetails ud " +
+            "LEFT JOIN ud.organization o " +
+            "WHERE u.permission = 'BANK_ADMIN'"+
+            "AND o.organizationId = :orgId"
+    )
+    List<String> getMyAdmins(@Param("orgId")long orgId);
+
 
     @Query(value = "SELECT DISTINCT u FROM User u " +
             "LEFT JOIN FETCH u.userDetails ud " +
