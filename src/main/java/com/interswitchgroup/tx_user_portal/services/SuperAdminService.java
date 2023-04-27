@@ -8,7 +8,11 @@ import com.interswitchgroup.tx_user_portal.models.response.UserResponseModel;
 import com.interswitchgroup.tx_user_portal.repositories.*;
 import com.interswitchgroup.tx_user_portal.utils.Enums.UserPermission;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -23,15 +27,17 @@ public class SuperAdminService {
     private final RoleRepository roleRepository;
     private final OrganizationRepository organizationRepository;
     private final EmailService emailService;
+    private final AuditLogsRepository auditLogsRepository;
 
     @Autowired
-    public SuperAdminService(RequestRepository requestRepository, UserRepository userRepository, UserDetailsRepository userDetailsRepository, RoleRepository roleRepository, OrganizationRepository organizationRepository, EmailService emailService) {
+    public SuperAdminService(RequestRepository requestRepository, UserRepository userRepository, UserDetailsRepository userDetailsRepository, RoleRepository roleRepository, OrganizationRepository organizationRepository, EmailService emailService, AuditLogsRepository auditLogsRepository) {
         this.requestRepository = requestRepository;
         this.userRepository = userRepository;
         this.userDetailsRepository = userDetailsRepository;
         this.roleRepository = roleRepository;
         this.organizationRepository = organizationRepository;
         this.emailService = emailService;
+        this.auditLogsRepository = auditLogsRepository;
     }
 
     @Autowired
@@ -74,7 +80,6 @@ public class SuperAdminService {
 
  */
     }
-
 
     /**
      * Function to create a bank admin.
@@ -148,5 +153,44 @@ public class SuperAdminService {
         }
         return responseModel;
     }
+
+    public Page<AuditLog> fetchAllLogs(int pageNumber, int pageSize){
+        try{
+            User currentAdmin = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+            String user_permission = String.valueOf(currentAdmin.getPermission());
+
+            if(user_permission.equals("ADMIN") ){
+                Pageable pageable = PageRequest.of(pageNumber, pageSize);
+                return auditLogsRepository.findAll(pageable);
+            }
+            else{
+                throw new IllegalArgumentException("User is not authorized to make this request");
+            }
+        }
+        catch (Exception e){
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    public Page<AuditLog> fuzzySearchLogs(String searchTerm, int pageNumber, int pageSize){
+        try{
+            User currentAdmin = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+            String user_permission = String.valueOf(currentAdmin.getPermission());
+
+            if(user_permission.equals("ADMIN") ){
+                Pageable pageable = PageRequest.of(pageNumber, pageSize);
+                return auditLogsRepository.searchLogs(searchTerm, pageable);
+            }
+            else{
+                throw new IllegalArgumentException("User is not authorized to make this request");
+            }
+        }catch (Exception e){
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+
 
 }
