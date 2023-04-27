@@ -6,6 +6,7 @@ import com.interswitchgroup.tx_user_portal.models.request.NewOrganizationRequest
 import com.interswitchgroup.tx_user_portal.models.request.NewRoleRequestModel;
 import com.interswitchgroup.tx_user_portal.models.response.UserResponseModel;
 import com.interswitchgroup.tx_user_portal.repositories.*;
+import com.interswitchgroup.tx_user_portal.utils.Enums.LogActivity;
 import com.interswitchgroup.tx_user_portal.utils.Enums.UserPermission;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -91,6 +92,7 @@ public class SuperAdminService {
         try {
             Optional<User> userOptional = userRepository.findUserByEmailAddress(userSignUpRequestModel.getEmail_address());
             Optional<Organization> organizationOptional = organizationRepository.findByOrganizationId(userSignUpRequestModel.getOrganization_id());
+            User authenticatedUser = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 
             if (userOptional.isPresent()) {
                 System.out.println("USER ALREADY EXISTS");
@@ -114,8 +116,7 @@ public class SuperAdminService {
                 newUser.setDateCreated(LocalDateTime.now());
                 newUser.setDateUpdated(LocalDateTime.now());
 
-
-                //2.a Add user details to db
+                //2.Add user details to db
                 UserDetails newUserDetails = new UserDetails(
                         userSignUpRequestModel.getFirst_name(),
                         userSignUpRequestModel.getSecond_name(),
@@ -136,6 +137,15 @@ public class SuperAdminService {
                         "Account Created",
                         "Your account has been successfully created on the TX User & Role Management Portal. Reach out to the InfoSec team to get your login credentials.");
 
+                //log activity
+                System.out.println("AUTHENTICATED USER::"+ authenticatedUser.toString());
+
+                AuditLog newLog = new AuditLog(
+                        LogActivity.ADMIN_CREATED,
+                        authenticatedUser.getEmailAddress(),
+                        "Bank admin:"+newUser.getEmailAddress()+" was created by " +authenticatedUser.getEmailAddress()+ ".",
+                        LocalDateTime.now());
+                auditLogsRepository.save(newLog);
             }
 
             responseModel = new UserResponseModel(

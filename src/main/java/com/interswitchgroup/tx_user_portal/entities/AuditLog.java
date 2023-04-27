@@ -11,12 +11,11 @@ public class AuditLog {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long logId;
 
-    @OneToOne(cascade = CascadeType.ALL)
-    @JoinColumn(name = "userId")
-    private User user;
-
     @Enumerated(EnumType.STRING)
     private LogActivity logActivity;
+
+    @Column(name = "executed_by")
+    private String executedBy;
 
     @Column(name = "details")
     private String details;
@@ -28,12 +27,19 @@ public class AuditLog {
     public AuditLog() {
     }
 
-    public AuditLog(long logId, User user, LogActivity logActivity, String details, LocalDateTime dateCreated) {
-        this.logId = logId;
-        this.user = user;
+    public AuditLog(LogActivity logActivity, String executedBy, String details, LocalDateTime dateCreated) {
         this.logActivity = logActivity;
+        this.executedBy = executedBy;
         this.details = details;
         this.dateCreated = dateCreated;
+    }
+
+    public String getExecutedBy() {
+        return executedBy;
+    }
+
+    public void setExecutedBy(String executedBy) {
+        this.executedBy = executedBy;
     }
 
     public long getLogId() {
@@ -42,14 +48,6 @@ public class AuditLog {
 
     public void setLogId(long logId) {
         this.logId = logId;
-    }
-
-    public User getUser() {
-        return user;
-    }
-
-    public void setUser(User user) {
-        this.user = user;
     }
 
     public LogActivity getLogActivity() {

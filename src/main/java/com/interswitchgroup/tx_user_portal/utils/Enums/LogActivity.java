@@ -5,6 +5,7 @@ public enum LogActivity {
     USER_DISABLED,
     REQUEST_APPROVED,
     REQUEST_REJECTED,
+    REQUEST_CLOSED,
     ADMIN_CREATED,
     USER_CREATED,
 }

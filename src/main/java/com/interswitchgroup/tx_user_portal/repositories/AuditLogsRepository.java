@@ -11,13 +11,9 @@ import org.springframework.data.repository.query.Param;
 public interface AuditLogsRepository extends JpaRepository<AuditLog, Long> {
 
     @Query(value = "SELECT al FROM AuditLog al " +
-            "JOIN FETCH al.user u " +
-            "JOIN u.userDetails ud " +
-            "WHERE u.emailAddress LIKE %:searchTerm%",
+            "WHERE al.executedBy LIKE %:searchTerm%",
             countQuery = "SELECT al FROM AuditLog al " +
-                    "JOIN FETCH al.user u " +
-                    "JOIN u.userDetails ud " +
-                    "WHERE u.emailAddress LIKE %:searchTerm%"
+                    "WHERE al.executedBy LIKE %:searchTerm%"
     )
     Page<AuditLog> searchLogs(@Param("searchTerm") String searchTerm, Pageable pageable);
 }
