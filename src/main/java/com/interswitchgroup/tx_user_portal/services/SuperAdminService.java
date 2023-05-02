@@ -9,14 +9,17 @@ import com.interswitchgroup.tx_user_portal.repositories.*;
 import com.interswitchgroup.tx_user_portal.utils.Enums.LogActivity;
 import com.interswitchgroup.tx_user_portal.utils.Enums.UserPermission;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.InputStreamResource;
+import org.springframework.core.io.Resource;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.http.HttpStatus;
+import org.springframework.http.*;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.io.ByteArrayInputStream;
 import java.time.LocalDateTime;
 import java.util.*;
 
@@ -29,9 +32,10 @@ public class SuperAdminService {
     private final OrganizationRepository organizationRepository;
     private final EmailService emailService;
     private final AuditLogsRepository auditLogsRepository;
+    private final ExportService exportService;
 
     @Autowired
-    public SuperAdminService(RequestRepository requestRepository, UserRepository userRepository, UserDetailsRepository userDetailsRepository, RoleRepository roleRepository, OrganizationRepository organizationRepository, EmailService emailService, AuditLogsRepository auditLogsRepository) {
+    public SuperAdminService(RequestRepository requestRepository, UserRepository userRepository, UserDetailsRepository userDetailsRepository, RoleRepository roleRepository, OrganizationRepository organizationRepository, EmailService emailService, AuditLogsRepository auditLogsRepository, ExportService exportService) {
         this.requestRepository = requestRepository;
         this.userRepository = userRepository;
         this.userDetailsRepository = userDetailsRepository;
@@ -39,6 +43,7 @@ public class SuperAdminService {
         this.organizationRepository = organizationRepository;
         this.emailService = emailService;
         this.auditLogsRepository = auditLogsRepository;
+        this.exportService = exportService;
     }
 
     @Autowired
@@ -201,6 +206,39 @@ public class SuperAdminService {
         }
     }
 
+    public ResponseEntity<Resource> exportLogData(){
+        List<AuditLog> data = new ArrayList<>();
+
+        try{
+            User currentAdmin = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+            String user_permission = String.valueOf(currentAdmin.getPermission());
+
+            if(user_permission.equals("ADMIN") ){
+                data = auditLogsRepository.findAll();
+                ByteArrayInputStream excelData = exportService.convertToExcel(data);
 
 
+                // Set the response headers for the Excel file download
+                HttpHeaders headers = new HttpHeaders();
+                headers.setContentType(MediaType.APPLICATION_OCTET_STREAM);
+                headers.setContentDisposition(ContentDisposition.attachment().filename("data.xlsx").build());
+
+                // Return the Excel file as a ResponseEntity
+                InputStreamResource bodyData = new InputStreamResource(excelData);
+
+                ResponseEntity<Resource> resource = ResponseEntity.ok()
+                        .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename="+"data.xlsx")
+                        .body(bodyData);
+                return resource;
+
+            }
+            else{
+                throw new IllegalArgumentException("User is not authorized to make this request");
+            }
+        }
+        catch (Exception e){
+            e.printStackTrace();
+        }
+        return null;
+    }
 }
