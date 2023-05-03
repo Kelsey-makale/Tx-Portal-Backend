@@ -20,6 +20,7 @@ dependencies {
 	implementation 'io.jsonwebtoken:jjwt:0.9.1'
 	implementation 'com.auth0:java-jwt:4.0.0'
 	runtimeOnly 'com.mysql:mysql-connector-j'
+	implementation 'com.microsoft.sqlserver:mssql-jdbc:11.2.1.jre8'
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 }
 
