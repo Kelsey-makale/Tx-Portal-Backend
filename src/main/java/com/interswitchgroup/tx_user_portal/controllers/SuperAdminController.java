@@ -1,15 +1,16 @@
 package com.interswitchgroup.tx_user_portal.controllers;
 
+import com.interswitchgroup.tx_user_portal.entities.AuditLog;
 import com.interswitchgroup.tx_user_portal.entities.Request;
 import com.interswitchgroup.tx_user_portal.entities.User;
 import com.interswitchgroup.tx_user_portal.models.request.AdminSignUpRequestModel;
 import com.interswitchgroup.tx_user_portal.models.request.NewOrganizationRequestModel;
 import com.interswitchgroup.tx_user_portal.models.request.NewRoleRequestModel;
-import com.interswitchgroup.tx_user_portal.models.request.UserSignUpRequestModel;
 import com.interswitchgroup.tx_user_portal.models.response.UserResponseModel;
 import com.interswitchgroup.tx_user_portal.services.AdminService;
 import com.interswitchgroup.tx_user_portal.services.SuperAdminService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.Resource;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -61,5 +62,21 @@ public class SuperAdminController {
     public ResponseEntity<UserResponseModel> addUser(@RequestBody AdminSignUpRequestModel adminSignUpRequestModel){
         superAdminService.createBankAdmin(adminSignUpRequestModel);
         return new ResponseEntity<>( superAdminService.createBankAdmin(adminSignUpRequestModel), HttpStatus.OK);
+    }
+
+    @GetMapping("/logs")
+    public ResponseEntity<Page<AuditLog>> getAllLogs(@RequestParam(defaultValue = "0") int pageNumber, @RequestParam(defaultValue = "10") int pageSize){
+        Page<AuditLog> allLogs = superAdminService.fetchAllLogs(pageNumber, pageSize);
+        return new ResponseEntity<>(allLogs, HttpStatus.OK);
+    }
+
+    @GetMapping("/search/logs")
+    public ResponseEntity<Page<AuditLog>> fuzzySearchLogs(@RequestParam String searchTerm, @RequestParam(defaultValue = "0") int pageNumber, @RequestParam(defaultValue = "10") int pageSize){
+        return new ResponseEntity<>(superAdminService.fuzzySearchLogs(searchTerm, pageNumber, pageSize), HttpStatus.OK);
+    }
+
+    @GetMapping("/export/logs")
+    public ResponseEntity<Resource> exportLogs(){
+        return (superAdminService.exportLogData());
     }
 }

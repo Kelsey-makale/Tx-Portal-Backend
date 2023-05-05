@@ -2,11 +2,9 @@ package com.interswitchgroup.tx_user_portal.services;
 
 import com.interswitchgroup.tx_user_portal.entities.*;
 import com.interswitchgroup.tx_user_portal.models.request.UpdateRequestStatusRequestModel;
-import com.interswitchgroup.tx_user_portal.repositories.RequestRepository;
-import com.interswitchgroup.tx_user_portal.repositories.RoleRepository;
-import com.interswitchgroup.tx_user_portal.repositories.UserDetailsRepository;
-import com.interswitchgroup.tx_user_portal.repositories.UserRepository;
+import com.interswitchgroup.tx_user_portal.repositories.*;
 import com.interswitchgroup.tx_user_portal.utils.Enums.AccountStatus;
+import com.interswitchgroup.tx_user_portal.utils.Enums.LogActivity;
 import com.interswitchgroup.tx_user_portal.utils.Enums.RequestStatus;
 import jakarta.persistence.criteria.Join;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,14 +25,16 @@ public class AdminService {
     private final UserDetailsRepository userDetailsRepository;
     private final RoleRepository roleRepository;
     private final EmailService emailService;
+    private final AuditLogsRepository auditLogsRepository;
 
     @Autowired
-    public AdminService(RequestRepository requestRepository, UserRepository userRepository, UserDetailsRepository userDetailsRepository, RoleRepository roleRepository, EmailService emailService) {
+    public AdminService(RequestRepository requestRepository, UserRepository userRepository, UserDetailsRepository userDetailsRepository, RoleRepository roleRepository, EmailService emailService, AuditLogsRepository auditLogsRepository) {
         this.requestRepository = requestRepository;
         this.userRepository = userRepository;
         this.userDetailsRepository = userDetailsRepository;
         this.roleRepository = roleRepository;
         this.emailService = emailService;
+        this.auditLogsRepository = auditLogsRepository;
     }
 
     /**
@@ -95,7 +95,6 @@ public class AdminService {
         };
     }
 
-
     /**
      * Function to fetch all users
      *      * If user is an BANK ADMIN
@@ -144,7 +143,6 @@ public class AdminService {
         };
     }
 
-
     /**
      * This function approves/rejects one request at a time.
      * @param requestId
@@ -158,8 +156,8 @@ public class AdminService {
             throw new IllegalArgumentException("Request not found: " + requestId);
         }
         else{
-            User userObj = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-            String user_permission = String.valueOf(userObj.getPermission());
+            User authenticatedUser = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+            String user_permission = String.valueOf(authenticatedUser.getPermission());
             Request foundRequest = requestOptional.get();
 
             if(user_permission.equals("ADMIN") ){
@@ -188,6 +186,15 @@ public class AdminService {
                             "We are pleased to inform you that your recent request has been approved by the administrator. Please proceed with your desired action.",
                             bankAdminsEmails.toArray(new String[0]));
 
+                    //log activity
+                    AuditLog newLog = new AuditLog(
+                            LogActivity.REQUEST_CLOSED,
+                            authenticatedUser.getEmailAddress(),
+                        "Request by user:"+requestUser.getEmailAddress()+" was closed by " +authenticatedUser.getEmailAddress()+ ".",
+                            LocalDateTime.now()
+                    );
+                    auditLogsRepository.save(newLog);
+
                 }
                 else if(request_status.equals(RequestStatus.REJECTED.name())){
                     foundRequest.setRequestStatus(RequestStatus.REJECTED);
@@ -203,6 +210,14 @@ public class AdminService {
                             "We regret to inform you that your recent request has been rejected by the InfoSec team. To view the reason for the rejection, please access your request on the portal.",
                             bankAdminsEmails.toArray(new String[0]));
 
+                    //log activity
+                    AuditLog newLog = new AuditLog(LogActivity.REQUEST_REJECTED,
+                            authenticatedUser.getEmailAddress(),
+                            "Request by user:"+requestUser.getEmailAddress()+" was rejected by " +authenticatedUser.getEmailAddress()+ ".",
+                            LocalDateTime.now()
+                    );
+                    auditLogsRepository.save(newLog);
+
                 }
                 else{
                     throw new IllegalArgumentException("REQUEST VALUE PASSED IS INCORRECT " + request_status);
@@ -212,7 +227,7 @@ public class AdminService {
                 if(request_status.equals(RequestStatus.APPROVED.name())){
                     foundRequest.setRequestStatus(RequestStatus.APPROVED);
                     foundRequest.setDateUpdated(LocalDateTime.now());
-                    foundRequest.setApprover_id(userObj.getUser_id());
+                    foundRequest.setApprover_id(authenticatedUser.getUser_id());
 
                     //send email to super admin and cc bank user.
                     User requestUser = foundRequest.getUser();
@@ -220,12 +235,21 @@ public class AdminService {
                     String superAdminEmail = userRepository.getSuperAdmin();
                     List<String> ccRecipient = new ArrayList<>();
                     ccRecipient.add(superAdminEmail);
-                    ccRecipient.add(userObj.getEmailAddress());
+                    ccRecipient.add(authenticatedUser.getEmailAddress());
 
                     emailService.sendMailWithCC(bankUserEmail,
                             "Request Status",
                             "We are pleased to inform you that your recent request has been approved by your bank administrator. Current status is pending closure by the InfoSec team.",
                             ccRecipient.toArray(new String[0]));
+
+                    //log activity
+                    AuditLog newLog = new AuditLog(
+                             LogActivity.REQUEST_APPROVED,
+                            authenticatedUser.getEmailAddress(),
+                            "Request by user:"+requestUser.getEmailAddress()+" was approved by " +authenticatedUser.getEmailAddress()+ ".",
+                            LocalDateTime.now()
+                    );
+                    auditLogsRepository.save(newLog);
 
 
                 }
@@ -240,6 +264,15 @@ public class AdminService {
                             "Request Status",
                             "We regret to inform you that your recent request has been rejected by your bank administrator. To view the reason for the rejection, please access your request on the portal."
                     );
+
+                    //log activity
+                    AuditLog newLog = new AuditLog(
+                            LogActivity.REQUEST_APPROVED,
+                            authenticatedUser.getEmailAddress(),
+                            "Request by user:"+user.getEmailAddress()+" was rejected by " +authenticatedUser.getEmailAddress()+ ".",
+                            LocalDateTime.now()
+                    );
+                    auditLogsRepository.save(newLog);
 
                 }
                 else{
@@ -390,6 +423,7 @@ public class AdminService {
     public void UpdateUserAccountStatus(long user_id, String account_status) {
         //check if user exists on the db
         Optional<User> userOptional = userRepository.findUserByUserId(user_id);
+        User authenticatedUser = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 
         if(userOptional.isEmpty()){
             throw new IllegalArgumentException("User not found");
@@ -403,9 +437,27 @@ public class AdminService {
                emailService.sendMail(user.getEmailAddress(),
                        "Account Enabled",
                        "Your account has been successfully enabled by your administrator. You can now log in using the credentials you have set.");
+
+               //log activity
+               AuditLog newLog = new AuditLog(
+                        LogActivity.USER_ENABLED,
+                       authenticatedUser.getEmailAddress(),
+                       "User:"+user.getEmailAddress()+" was enabled by " +authenticatedUser.getEmailAddress()+ ".",
+                       LocalDateTime.now()
+               );
+               auditLogsRepository.save(newLog);
            }
            else if(account_status.equals(AccountStatus.DISABLE.name())){
                user.getUserDetails().setVerified(false);
+
+               //log activity
+               AuditLog newLog = new AuditLog(
+                        LogActivity.USER_DISABLED,
+                       authenticatedUser.getEmailAddress(),
+                       "User:"+user.getEmailAddress()+" was disabled by " +authenticatedUser.getEmailAddress()+ ".",
+                       LocalDateTime.now()
+               );
+               auditLogsRepository.save(newLog);
            }
            else{
                throw new IllegalArgumentException("VALUE PASSED IS INCORRECT " + account_status);

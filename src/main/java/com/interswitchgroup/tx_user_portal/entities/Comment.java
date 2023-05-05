@@ -11,7 +11,7 @@ public class Comment {
     private long commentId;
 
     @OneToOne(cascade = CascadeType.ALL)
-    @JoinColumn(name = "userId")
+    @JoinColumn(name = "user_id")
     private User user;
 
     @Column(name = "message")

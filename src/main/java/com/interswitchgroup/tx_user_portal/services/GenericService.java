@@ -15,9 +15,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -35,7 +33,8 @@ public class GenericService {
     private final UserVerificationRepository userVerificationRepository;
     private final RequestRepository requestRepository;
     private final EmailService emailService;
-    private  final AuthenticationManager authenticationManager;
+    private final AuthenticationManager authenticationManager;
+    private final AuditLogsRepository auditLogsRepository;
 
     @Autowired
     PasswordEncoder passwordEncoder;
@@ -44,7 +43,7 @@ public class GenericService {
     JwtUtil jwtUtil;
 
     @Autowired
-    public GenericService(UserRepository userRepository, UserDetailsRepository userDetailsRepository, OrganizationRepository organizationRepository, RoleRepository roleRepository, UserVerificationRepository userVerificationRepository, RequestRepository requestRepository, EmailService emailService, AuthenticationManager authenticationManager) {
+    public GenericService(UserRepository userRepository, UserDetailsRepository userDetailsRepository, OrganizationRepository organizationRepository, RoleRepository roleRepository, UserVerificationRepository userVerificationRepository, RequestRepository requestRepository, EmailService emailService, AuthenticationManager authenticationManager, AuditLogsRepository auditLogsRepository) {
         this.userRepository = userRepository;
         this.userDetailsRepository = userDetailsRepository;
         this.organizationRepository = organizationRepository;
@@ -53,6 +52,7 @@ public class GenericService {
         this.requestRepository = requestRepository;
         this.emailService = emailService;
         this.authenticationManager = authenticationManager;
+        this.auditLogsRepository = auditLogsRepository;
     }
 
     public UserResponseModel createUser(UserSignUpRequestModel userSignUpRequestModel){
@@ -63,7 +63,6 @@ public class GenericService {
             Optional<Organization> organizationOptional = organizationRepository.findByOrganizationId(userSignUpRequestModel.getOrganization_id());
 
             if (userOptional.isPresent()) {
-                System.out.println("USER ALREADY EXISTS");
                 throw new IllegalArgumentException("A user with this email already exists: " + userSignUpRequestModel.getEmail_address());
             }
             if (organizationOptional.isEmpty()) {
@@ -352,8 +351,6 @@ public class GenericService {
                     HttpStatus.OK.value(),
                     "Request logged successfully."
             );
-
-            //todo: send email to info_sec and bank admin
 
             //send email to bank user and cc bank admin(s).
             String superAdminEmail = userRepository.getSuperAdmin();
