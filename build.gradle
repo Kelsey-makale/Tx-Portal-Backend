@@ -1,6 +1,7 @@
 plugins {
 	id 'java'
 	id 'org.springframework.boot' version '3.0.6'
+	id 'com.github.johnrengelman.shadow' version '7.0.0'
 }
 apply plugin: 'io.spring.dependency-management'
 
@@ -31,7 +32,7 @@ dependencies {
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 }
 
-tasks.named("jar") {
+shadowJar{
 	manifest {
 		attributes(
 				'Main-Class': 'com.interswitchgroup.tx_user_portal.TxUserPortalApplication'
