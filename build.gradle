@@ -13,7 +13,7 @@ repositories {
 }
 
 springBoot {
-	mainClass = 'com.example.ExampleApplication'
+	mainClass = 'com.interswitchgroup.tx_user_portal.TxUserPortalApplication'
 }
 
 dependencies {
@@ -35,3 +35,6 @@ tasks.named('test') {
 	useJUnitPlatform()
 }
 
+tasks.named("bootJar") {
+	mainClass = 'com.interswitchgroup.tx_user_portal.TxUserPortalApplication'
+}
