@@ -15,6 +15,7 @@ repositories {
 jar {
 	manifest {
 		attributes(
+				'Class-Path': configurations.compile.collect { it.getName() }.join(' '),
 				'Main-Class': 'com.interswitchgroup.tx_user_portal.TxUserPortalApplication'
 		)
 	}
