@@ -17,7 +17,8 @@ public class UserVerification {
     @JoinColumn(name = "user_id")
     private User user;
 
-    @Column(name = "otp_verified", columnDefinition = "BIT DEFAULT 0")
+    //@Column(name = "otp_verified", columnDefinition = "BIT DEFAULT 0")
+    @Column(name = "otp_verified", columnDefinition = "boolean default false")
     private boolean otp_verified;
 
     @Column(name = "created_at")

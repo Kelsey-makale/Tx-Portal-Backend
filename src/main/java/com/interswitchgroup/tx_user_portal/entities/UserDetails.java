@@ -28,7 +28,8 @@ public class UserDetails {
     @Column(name = "office_number")
     private String officeNumber;
 
-    @Column(name = "is_verified", columnDefinition = "BIT DEFAULT 0")
+    //@Column(name = "is_verified", columnDefinition = "BIT DEFAULT 0")
+    @Column(name = "is_verified", columnDefinition = "boolean default false")
     private boolean isVerified;
 
     @ManyToOne(fetch = FetchType.EAGER)
