@@ -31,19 +31,11 @@ dependencies {
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 }
 
-tasks.named('test') {
-	useJUnitPlatform()
-}
-
-tasks.named("bootJar") {
+tasks.named("jar") {
 	manifest {
 		attributes(
-				'Main-Class': mainClass
+				'Main-Class': 'com.interswitchgroup.tx_user_portal.TxUserPortalApplication'
 		)
 	}
 }
 
-
-tasks.named("bootJar") {
-	mainClass = 'com.interswitchgroup.tx_user_portal.TxUserPortalApplication'
-}
