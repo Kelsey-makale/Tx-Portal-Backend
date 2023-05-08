@@ -35,6 +35,11 @@ tasks.named('test') {
 	useJUnitPlatform()
 }
 
+tasks.named("jar") {
+	mainClass = 'com.interswitchgroup.tx_user_portal.TxUserPortalApplication'
+}
+
+
 tasks.named("bootJar") {
 	mainClass = 'com.interswitchgroup.tx_user_portal.TxUserPortalApplication'
 }
