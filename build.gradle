@@ -38,7 +38,7 @@ tasks.named('test') {
 tasks.named("jar") {
 	manifest {
 		attributes(
-				'Main-Class': 'com.example.MyMainClass'
+				'Main-Class': 'com.interswitchgroup.tx_user_portal.TxUserPortalApplication'
 		)
 	}
 }
