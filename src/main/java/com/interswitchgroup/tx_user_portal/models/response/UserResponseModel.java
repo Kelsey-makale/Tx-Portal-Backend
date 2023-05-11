@@ -1,29 +1,30 @@
-package com.interswitchgroup.tx_user_portal.models;
+package com.interswitchgroup.tx_user_portal.models.response;
+
 
 import java.util.Map;
 import java.util.Optional;
 
 public class UserResponseModel {
-    private String status;
+    private int status;
     private String message;
     private Optional<Map<String, Object>> data;
 
-    public UserResponseModel(String status, String message, Optional<Map<String, Object>> data) {
+    public UserResponseModel(int status, String message, Optional<Map<String, Object>> data) {
         this.status = status;
         this.message = message;
         this.data = data;
     }
 
-    public UserResponseModel(String status, String message) {
+    public UserResponseModel(int status, String message) {
         this.status = status;
         this.message = message;
     }
 
-    public String getStatus() {
+    public int getStatus() {
         return status;
     }
 
-    public void setStatus(String status) {
+    public void setStatus(int status) {
         this.status = status;
     }
 

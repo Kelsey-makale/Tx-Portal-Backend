@@ -1,19 +1,19 @@
-package com.interswitchgroup.tx_user_portal.models;
+package com.interswitchgroup.tx_user_portal.models.request;
 
 public class UserVerifyRequestModel {
-    private int verification_code;
+    private String verification_code;
     private String email_address;
 
-    public UserVerifyRequestModel(int verification_code, String email_address) {
+    public UserVerifyRequestModel(String verification_code, String email_address) {
         this.verification_code = verification_code;
         this.email_address = email_address;
     }
 
-    public int getVerification_code() {
+    public String getVerification_code() {
         return verification_code;
     }
 
-    public void setVerification_code(int verification_code) {
+    public void setVerification_code(String verification_code) {
         this.verification_code = verification_code;
     }
 
