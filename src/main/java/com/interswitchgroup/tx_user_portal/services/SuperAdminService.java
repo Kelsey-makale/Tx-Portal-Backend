@@ -71,20 +71,53 @@ public class SuperAdminService {
      * Function to add/ create a new role
      */
     public void addNewRole(NewRoleRequestModel requestModel){
-/*
+
         //check if role already exists
         String role_name = requestModel.getRole_name();
-        Optional<Role> roleOptional = roleRepository.findByRoleRoleName(role_name);
+        Optional<Role> roleOptional = roleRepository.findByRoleName(role_name);
 
         if(roleOptional.isPresent()){
             throw new IllegalArgumentException("ROLE PROVIDED ALREADY EXISTS " + role_name);
         }else{
             Role newRole = new Role();
             newRole.setRole_name(role_name);
+            newRole.setRole_description(requestModel.getRole_description());
             roleRepository.save(newRole);
         }
+    }
 
- */
+    //todo: edit a role.
+    public void editRole(long role_id, String roleName, String roleDescription){
+        Optional<Role> roleOptional = roleRepository.findByRoleId(role_id);
+
+        if(roleOptional.isEmpty()){
+            throw new IllegalArgumentException("Role not found");
+        }
+        else{
+            Role role = roleOptional.get();
+            role.setRole_name(roleName);
+            role.setRole_description(roleDescription);
+
+            roleRepository.save(role);
+        }
+    }
+
+    public Page<Role> fuzzySearchRoles(String searchTerm, int pageNumber, int pageSize){
+        try{
+            User currentAdmin = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+            String user_permission = String.valueOf(currentAdmin.getPermission());
+
+            if(user_permission.equals("ADMIN") ){
+                Pageable pageable = PageRequest.of(pageNumber, pageSize);
+                return roleRepository.searchRoles(searchTerm, pageable);
+            }
+            else{
+                throw new IllegalArgumentException("User is not authorized to make this request");
+            }
+        }catch (Exception e){
+            e.printStackTrace();
+            return null;
+        }
     }
 
     /**

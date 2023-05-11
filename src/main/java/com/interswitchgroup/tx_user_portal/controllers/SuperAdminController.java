@@ -2,6 +2,7 @@ package com.interswitchgroup.tx_user_portal.controllers;
 
 import com.interswitchgroup.tx_user_portal.entities.AuditLog;
 import com.interswitchgroup.tx_user_portal.entities.Request;
+import com.interswitchgroup.tx_user_portal.entities.Role;
 import com.interswitchgroup.tx_user_portal.entities.User;
 import com.interswitchgroup.tx_user_portal.models.request.AdminSignUpRequestModel;
 import com.interswitchgroup.tx_user_portal.models.request.NewOrganizationRequestModel;
@@ -78,5 +79,16 @@ public class SuperAdminController {
     @GetMapping("/export/logs")
     public ResponseEntity<Resource> exportLogs(){
         return (superAdminService.exportLogData());
+    }
+
+    @PutMapping("/roles/edit/{roleId}/{roleName}/{roleDescription}")
+    public ResponseEntity<String> editRole(@PathVariable long roleId, @PathVariable String roleName, @PathVariable String roleDescription){
+        superAdminService.editRole(roleId,roleName,roleDescription);
+        return new ResponseEntity<>("Role updated successfully", HttpStatus.OK);
+    }
+
+    @GetMapping("/search/roles")
+    public ResponseEntity<Page<Role>> fuzzySearchRoles(@RequestParam String searchTerm, @RequestParam(defaultValue = "0") int pageNumber, @RequestParam(defaultValue = "10") int pageSize){
+        return new ResponseEntity<>(superAdminService.fuzzySearchRoles(searchTerm, pageNumber, pageSize), HttpStatus.OK);
     }
 }

@@ -44,10 +44,10 @@ public class DataInitializer implements CommandLineRunner {
         Organization org3 = new Organization(3, "KCB");
         orderRepository.saveAll(Arrays.asList(org1, org2, org3));
 
-        Role role1 = new Role(1, "Basic user role");
-        Role role2 = new Role(2, "Hot card role");
-        Role role3 = new Role(3, "Cold card role");
-        Role role4 = new Role(4, "Monitoring role");
+        Role role1 = new Role(1, "Basic user role", "Basic role, limited access to card data.");
+        Role role2 = new Role(2, "Hot card role", "User can block and disable cards.");
+        Role role3 = new Role(3, "Cold card role", "Lorem ipsum dolor sit amet.");
+        Role role4 = new Role(4, "Monitoring role", "User can monitor all bank related transactions.");
         roleRepository.saveAll(Arrays.asList(role1, role2, role3, role4));
 
         Optional<User> userOptional = userRepository.findUserByEmailAddress("joe.mak@example.com");
