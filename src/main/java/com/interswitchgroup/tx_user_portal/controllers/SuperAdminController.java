@@ -91,4 +91,10 @@ public class SuperAdminController {
     public ResponseEntity<Page<Role>> fuzzySearchRoles(@RequestParam String searchTerm, @RequestParam(defaultValue = "0") int pageNumber, @RequestParam(defaultValue = "10") int pageSize){
         return new ResponseEntity<>(superAdminService.fuzzySearchRoles(searchTerm, pageNumber, pageSize), HttpStatus.OK);
     }
+
+    @GetMapping("/roles")
+    public ResponseEntity<Page<Role>> getRoles(@RequestParam(defaultValue = "0") int pageNumber, @RequestParam(defaultValue = "10") int pageSize){
+        Page<Role> allRequests = superAdminService.getAllRoles(pageNumber,pageSize);
+        return new ResponseEntity<>(allRequests, HttpStatus.OK);
+    }
 }

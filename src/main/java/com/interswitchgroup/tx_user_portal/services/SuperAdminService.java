@@ -18,6 +18,8 @@ import org.springframework.http.*;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import java.io.ByteArrayInputStream;
 import java.time.LocalDateTime;
@@ -67,6 +69,24 @@ public class SuperAdminService {
         }
     }
 
+    public Page<Role> getAllRoles(int pageNumber, int pageSize){
+        try{
+            User currentAdmin = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+            String user_permission = String.valueOf(currentAdmin.getPermission());
+
+            if(user_permission.equals("ADMIN") ){
+                Pageable pageable = PageRequest.of(pageNumber, pageSize);
+                return roleRepository.findAll(pageable);
+            }
+            else{
+                throw new IllegalArgumentException("User is not authorized to make this request");
+            }
+        }catch (Exception e){
+            e.printStackTrace();
+            return null;
+        }
+    }
+
     /**
      * Function to add/ create a new role
      */
@@ -86,7 +106,13 @@ public class SuperAdminService {
         }
     }
 
-    //todo: edit a role.
+    /**
+     * Function to edit a role.
+     *
+     * @param role_id - role ID (INT)
+     * @param roleName - role Name (String)
+     * @param roleDescription -role Description (String)
+     */
     public void editRole(long role_id, String roleName, String roleDescription){
         Optional<Role> roleOptional = roleRepository.findByRoleId(role_id);
 
