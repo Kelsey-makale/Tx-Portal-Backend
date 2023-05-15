@@ -5,7 +5,7 @@ COPY ${JAR_FILE} demo.jar
 
 ENV db_url=jdbc:mysql://root:vRS3guqr3V0Fe57Wb7HI@containers-us-west-47.railway.app:6819/railway
 ENV db_user=root
-ENV db_pass=vRS3guqr3V0Fe57Wb7HI
+ENV db_pass=jE5LMttIS2PLCihLHuEm
 
 
 ENTRYPOINT ["java","-jar","demo.jar"]
