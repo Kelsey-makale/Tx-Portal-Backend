@@ -39,9 +39,13 @@ public class DataInitializer implements CommandLineRunner {
 
     @Override
     public void run(String... args) throws Exception {
-        Organization org1 = new Organization(1, "Family Bank");
-        Organization org2 = new Organization(2, "Interswitch");
-        Organization org3 = new Organization(3, "KCB");
+        Organization org1 = new Organization(1, "Guardian Bank");
+        Organization org2 = new Organization(2, "Family Bank Ltd");
+        Organization org3 = new Organization(3, "Mayfair Bank");
+        Organization org4 = new Organization(4, "Paramount Bank");
+        Organization org5 = new Organization(5, "Sterling Bank");
+
+
         orderRepository.saveAll(Arrays.asList(org1, org2, org3));
 
         Role role1 = new Role(1, "Basic user role", "Basic role, limited access to card data.");
