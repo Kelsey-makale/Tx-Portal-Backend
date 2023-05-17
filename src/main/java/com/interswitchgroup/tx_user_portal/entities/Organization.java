@@ -2,6 +2,8 @@ package com.interswitchgroup.tx_user_portal.entities;
 
 import jakarta.persistence.*;
 
+import java.util.Set;
+
 @Entity
 public class Organization {
     @Id
@@ -12,12 +14,28 @@ public class Organization {
     @Column(name = "org_name", nullable = false)
     private String organizationName;
 
+    @ManyToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @JoinTable(name = "OrganizationRoles", joinColumns = {
+            @JoinColumn(name = "organizationId", referencedColumnName = "org_id")
+    }, inverseJoinColumns = {@JoinColumn(name = "roleId", referencedColumnName = "role_id")})
+
+    private Set<Role> roles;
+
     public Organization() {
     }
 
-    public Organization(long organizationId, String organizationName) {
+    public Organization(long organizationId, String organizationName, Set<Role> roles) {
         this.organizationId = organizationId;
         this.organizationName = organizationName;
+        this.roles = roles;
+    }
+
+    public Set<Role> getRoles() {
+        return roles;
+    }
+
+    public void setRoles(Set<Role> roles) {
+        this.roles = roles;
     }
 
     public long getOrganization_id() {
@@ -35,6 +53,7 @@ public class Organization {
     public void setOrganization_name(String organizationName) {
         this.organizationName = organizationName;
     }
+
 
     @Override
     public String toString() {

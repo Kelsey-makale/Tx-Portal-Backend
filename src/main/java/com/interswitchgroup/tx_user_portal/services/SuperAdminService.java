@@ -65,7 +65,48 @@ public class SuperAdminService {
         }else{
             Organization newOrg = new Organization();
             newOrg.setOrganization_name(org_name);
+
+            List<Role> fetchedRoles = roleRepository.findAllById(requestModel.getRoleIds());
+            Set<Role> set = new HashSet<>(fetchedRoles);
+            newOrg.setRoles(set);
+
             organizationRepository.save(newOrg);
+        }
+    }
+
+    public Page<Organization> getAllOrganizations(int pageNumber,int pageSize){
+        try{
+            User currentAdmin = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+            String user_permission = String.valueOf(currentAdmin.getPermission());
+
+            if(user_permission.equals("ADMIN") ){
+                Pageable pageable = PageRequest.of(pageNumber, pageSize);
+                return organizationRepository.findAll(pageable);
+            }
+            else{
+                throw new IllegalArgumentException("User is not authorized to make this request");
+            }
+        }catch (Exception e){
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    public Page<Organization> fuzzySearchOrgz(String searchTerm,int pageNumber,int pageSize){
+        try{
+            User currentAdmin = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+            String user_permission = String.valueOf(currentAdmin.getPermission());
+
+            if(user_permission.equals("ADMIN") ){
+                Pageable pageable = PageRequest.of(pageNumber, pageSize);
+                return organizationRepository.searchAllOrganizations(searchTerm, pageable);
+            }
+            else{
+                throw new IllegalArgumentException("User is not authorized to make this request");
+            }
+        }catch (Exception e){
+            e.printStackTrace();
+            return null;
         }
     }
 
