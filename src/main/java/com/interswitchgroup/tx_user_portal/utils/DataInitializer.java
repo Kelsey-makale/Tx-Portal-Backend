@@ -48,7 +48,6 @@ public class DataInitializer implements CommandLineRunner {
         Set<Role> set = new HashSet<>();
         set.add(role1);
         set.add(role2);
-        set.add(role3);
 
         Organization org1 = new Organization(1, "Guardian Bank",set);
         Organization org2 = new Organization(2, "Family Bank Ltd", set);
