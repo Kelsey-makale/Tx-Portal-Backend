@@ -3,6 +3,7 @@ package com.interswitchgroup.tx_user_portal.controllers;
 import com.interswitchgroup.tx_user_portal.entities.Request;
 import com.interswitchgroup.tx_user_portal.entities.User;
 import com.interswitchgroup.tx_user_portal.models.RequestWithUserAndRolesDto;
+import com.interswitchgroup.tx_user_portal.models.request.CancelRequestModel;
 import com.interswitchgroup.tx_user_portal.models.request.UserRoleRequestModel;
 import com.interswitchgroup.tx_user_portal.models.response.UserResponseModel;
 import com.interswitchgroup.tx_user_portal.services.GenericService;
@@ -46,6 +47,12 @@ public class UserController {
     @GetMapping("/search/users")
     public ResponseEntity<Page<User>> fuzzySearchUser(@RequestParam String searchTerm, @RequestParam(defaultValue = "0") int pageNumber, @RequestParam(defaultValue = "10") int pageSize){
         return new ResponseEntity<>(genericService.usersFuzzySearch(searchTerm, pageNumber, pageSize), HttpStatus.OK);
+    }
+
+    @DeleteMapping("/request/cancel")
+    public ResponseEntity<String> deleteRequest(@RequestBody CancelRequestModel requestModel){
+        genericService.cancelRequest(requestModel);
+        return new ResponseEntity<>("Request cancelled successfully", HttpStatus.OK);
     }
 
 }

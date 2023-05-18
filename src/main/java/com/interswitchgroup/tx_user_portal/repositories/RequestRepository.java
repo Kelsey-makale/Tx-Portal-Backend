@@ -1,8 +1,6 @@
 package com.interswitchgroup.tx_user_portal.repositories;
 
-import com.interswitchgroup.tx_user_portal.entities.Organization;
 import com.interswitchgroup.tx_user_portal.entities.Request;
-import com.interswitchgroup.tx_user_portal.entities.User;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -19,6 +17,11 @@ public interface RequestRepository  extends JpaRepository<Request, Long>, JpaSpe
 
     @Query("SELECT r FROM Request r WHERE r.dateCreated BETWEEN :startDate AND :endDate")
     List<Request> findByDateRange(@Param("startDate") LocalDateTime startDate, @Param("endDate") LocalDateTime endDate);
+
+
+    @Query(value = "DELETE FROM Request r " +
+            "WHERE r.requestId = 'request_id'")
+    void deleteRequestById(@Param("request_id")long request_id);
 
     @Query(value = "SELECT r FROM Request r " +
             "JOIN FETCH r.user u " +
@@ -83,4 +86,6 @@ public interface RequestRepository  extends JpaRepository<Request, Long>, JpaSpe
                     "OR ud.secondName LIKE %:searchTerm% " +
                     "OR rl.role_name LIKE %:searchTerm%)")
     Page<Request> searchMyRequests(@Param("userId") long userId, @Param("searchTerm")String searchTerm, Pageable pageable);
+
+
 }

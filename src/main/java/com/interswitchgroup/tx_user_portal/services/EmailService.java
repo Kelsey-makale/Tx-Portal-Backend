@@ -18,6 +18,7 @@ public class EmailService {
     @Async
     public void sendMail(String to, String subject, String body){
         try{
+            /*
             SimpleMailMessage mailMessage = new SimpleMailMessage();
             mailMessage.setTo(to);
             mailMessage.setSubject(subject);
@@ -25,6 +26,7 @@ public class EmailService {
             mailMessage.setFrom("support.ke@quickteller.com"); //todo: get proper email
 
             mailSender.send(mailMessage);
+             */
 
         }catch(Exception e){
             LOGGER.error("Failed to send email", e);
@@ -36,6 +38,7 @@ public class EmailService {
     @Async
     public void sendMailWithCC(String to, String subject, String body, String[] cc){
         try{
+            /*
             SimpleMailMessage mailMessage = new SimpleMailMessage();
             mailMessage.setTo(to);
             mailMessage.setSubject(subject);
@@ -44,6 +47,8 @@ public class EmailService {
             mailMessage.setFrom("support.ke@quickteller.com"); //todo: get proper email
 
             mailSender.send(mailMessage);
+
+             */
 
         }catch(Exception e){
             LOGGER.error("Failed to send email", e);

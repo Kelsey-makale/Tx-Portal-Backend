@@ -24,14 +24,12 @@ public class Request {
     @Column(name = "organizationId")
     private long organizationId;
 
-
     @ManyToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     @JoinTable(name = "RequestRoles", joinColumns = {
             @JoinColumn(name = "requestId", referencedColumnName = "requestId")
     }, inverseJoinColumns = {@JoinColumn(name = "roleId", referencedColumnName = "role_id")})
 
     private Set<Role> roles;
-
 
     @OneToMany(cascade = CascadeType.ALL)
     @JoinColumn(name = "requestId", referencedColumnName = "requestId")

@@ -325,7 +325,7 @@ public class GenericService {
         return responseModel;
     }
 
-    public UserResponseModel makeRequest(UserRoleRequestModel requestModel){
+    public void makeRequest(UserRoleRequestModel requestModel){
         //todo: figure out how to handle duplicates. A user making the same request twice.
         UserResponseModel responseModel;
         Map<String, Object> responseBody = new HashMap<>();
@@ -370,7 +370,6 @@ public class GenericService {
                     Optional.of(responseBody)
             );
         }
-       return responseModel;
     }
 
     public Page<Request> getMyRequests(int pageNumber, int pageSize) {
@@ -382,6 +381,22 @@ public class GenericService {
         }catch(Exception e){
             e.printStackTrace();
             return null;
+        }
+    }
+
+    public void cancelRequest(CancelRequestModel cancelRequestModel){
+        try{
+            Optional<Request> requestOptional = requestRepository.findRequestByRequestId(cancelRequestModel.getRequest_id());
+            if(requestOptional.isEmpty()){
+                throw new IllegalArgumentException("Request not found: " + cancelRequestModel.getRequest_id());
+            }
+            else {
+                Request foundRequest = requestOptional.get();
+                System.out.println("REQUEST ID::"+ foundRequest.getRequest_id());
+                requestRepository.deleteRequestById(foundRequest.getRequest_id());
+            }
+        }catch(Exception e){
+            e.printStackTrace();
         }
     }
 
