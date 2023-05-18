@@ -49,7 +49,7 @@ public class UserController {
         return new ResponseEntity<>(genericService.usersFuzzySearch(searchTerm, pageNumber, pageSize), HttpStatus.OK);
     }
 
-    @DeleteMapping("/request/cancel")
+    @PostMapping("/request/cancel")
     public ResponseEntity<String> deleteRequest(@RequestBody CancelRequestModel requestModel){
         genericService.cancelRequest(requestModel);
         return new ResponseEntity<>("Request cancelled successfully", HttpStatus.OK);

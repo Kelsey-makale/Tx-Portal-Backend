@@ -392,8 +392,8 @@ public class GenericService {
             }
             else {
                 Request foundRequest = requestOptional.get();
-                System.out.println("REQUEST ID::"+ foundRequest.getRequest_id());
-                requestRepository.deleteRequestById(foundRequest.getRequest_id());
+                foundRequest.setRequestStatus(RequestStatus.CANCELLED);
+                requestRepository.save(foundRequest);
             }
         }catch(Exception e){
             e.printStackTrace();

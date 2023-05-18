@@ -5,5 +5,6 @@ public enum RequestStatus {
     APPROVED,
     REJECTED,
     AMEND,
-    CLOSED
+    CLOSED,
+    CANCELLED
 }
