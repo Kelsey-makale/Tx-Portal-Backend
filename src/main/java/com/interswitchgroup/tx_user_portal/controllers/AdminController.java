@@ -3,8 +3,10 @@ package com.interswitchgroup.tx_user_portal.controllers;
 import com.interswitchgroup.tx_user_portal.entities.Request;
 import com.interswitchgroup.tx_user_portal.entities.User;
 import com.interswitchgroup.tx_user_portal.entities.UserDetails;
+import com.interswitchgroup.tx_user_portal.models.request.AdminNewPasswordRequestModel;
 import com.interswitchgroup.tx_user_portal.models.request.CommentRequestModel;
 import com.interswitchgroup.tx_user_portal.models.request.UpdateRequestStatusRequestModel;
+import com.interswitchgroup.tx_user_portal.models.response.UserResponseModel;
 import com.interswitchgroup.tx_user_portal.services.AdminService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -80,5 +82,11 @@ public class AdminController {
     public ResponseEntity<Page<Request>> fuzzySearchRequest(@RequestParam String searchTerm, @RequestParam(defaultValue = "0") int pageNumber, @RequestParam(defaultValue = "10") int pageSize){
         return new ResponseEntity<>(adminService.requestsFuzzySearch(searchTerm, pageNumber, pageSize), HttpStatus.OK);
     }
+
+    @PostMapping("/create-password")
+    public ResponseEntity<UserResponseModel> createNewPassword(@RequestBody AdminNewPasswordRequestModel newPasswordRequestModel){
+        return new ResponseEntity<>(adminService.createNewPassword(newPasswordRequestModel), HttpStatus.OK);
+    }
 }
+
 

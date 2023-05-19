@@ -1,7 +1,9 @@
 package com.interswitchgroup.tx_user_portal.services;
 
 import com.interswitchgroup.tx_user_portal.entities.*;
+import com.interswitchgroup.tx_user_portal.models.request.AdminNewPasswordRequestModel;
 import com.interswitchgroup.tx_user_portal.models.request.UpdateRequestStatusRequestModel;
+import com.interswitchgroup.tx_user_portal.models.response.UserResponseModel;
 import com.interswitchgroup.tx_user_portal.repositories.*;
 import com.interswitchgroup.tx_user_portal.utils.Enums.AccountStatus;
 import com.interswitchgroup.tx_user_portal.utils.Enums.LogActivity;
@@ -12,7 +14,9 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -26,15 +30,20 @@ public class AdminService {
     private final RoleRepository roleRepository;
     private final EmailService emailService;
     private final AuditLogsRepository auditLogsRepository;
+    private final UserVerificationRepository userVerificationRepository;
 
     @Autowired
-    public AdminService(RequestRepository requestRepository, UserRepository userRepository, UserDetailsRepository userDetailsRepository, RoleRepository roleRepository, EmailService emailService, AuditLogsRepository auditLogsRepository) {
+    PasswordEncoder passwordEncoder;
+
+    @Autowired
+    public AdminService(RequestRepository requestRepository, UserRepository userRepository, UserDetailsRepository userDetailsRepository, RoleRepository roleRepository, EmailService emailService, AuditLogsRepository auditLogsRepository, UserVerificationRepository userVerificationRepository) {
         this.requestRepository = requestRepository;
         this.userRepository = userRepository;
         this.userDetailsRepository = userDetailsRepository;
         this.roleRepository = roleRepository;
         this.emailService = emailService;
         this.auditLogsRepository = auditLogsRepository;
+        this.userVerificationRepository = userVerificationRepository;
     }
 
     /**
@@ -515,6 +524,59 @@ public class AdminService {
             return null;
         }
 
+    }
+
+
+    public UserResponseModel createNewPassword(AdminNewPasswordRequestModel requestModel){
+        UserResponseModel responseModel;
+        Map<String, Object> response = new HashMap<>();
+
+        try{
+            Optional<User> userOptional = userRepository.findUserByEmailAddress(requestModel.getEmail_address());
+            User user = userOptional.orElseThrow(() -> new IllegalArgumentException("User not found with email: " + requestModel.getEmail_address()));
+
+            Optional<UserVerification> userVerificationOptional = userVerificationRepository.findUserVerificationByUserUserId(user.getUser_id());
+
+            if(userVerificationOptional.isPresent()){
+                UserVerification userVerificationObj = userVerificationOptional.get();
+
+                if(userVerificationObj.getOtp_code().equals(requestModel.getVerification_code())){
+
+                    //set their password
+                    String encPass = passwordEncoder.encode(requestModel.getNew_password());
+                    user.setPassword(encPass);
+                    user.getUserDetails().setVerified(true);
+                    userRepository.save(user);
+
+                    responseModel = new UserResponseModel(
+                            HttpStatus.OK.value(),
+                            "Password set password successfully."
+                    );
+                }
+                else{
+                    response.put("error", "Invalid OTP");
+                    responseModel = new UserResponseModel(
+                            HttpStatus.EXPECTATION_FAILED.value(),
+                            "Failed to reset user password.",
+                            Optional.of(response)
+                    );
+                }
+            }
+            else{
+                //return record does not exist
+                throw new IllegalArgumentException("Record does not exist. User needs to sign up first.");
+            }
+        }
+        catch(IllegalArgumentException e){
+            response.put("error", e.getMessage());
+            responseModel = new UserResponseModel(
+                    HttpStatus.EXPECTATION_FAILED.value(),
+                    "Failed to register user",
+                    Optional.of(response)
+            );
+        }
+
+        return responseModel;
     }
 
 }

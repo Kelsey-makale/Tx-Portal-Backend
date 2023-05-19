@@ -40,6 +40,7 @@ public class SecurityConfig {
                 .disable()
                 .authorizeHttpRequests()
                 .requestMatchers("/api/v1/public/**").permitAll()
+                .requestMatchers("/api/v1/admin/create-password").permitAll()
                 .anyRequest().authenticated()
                 .and()
                 .cors()
