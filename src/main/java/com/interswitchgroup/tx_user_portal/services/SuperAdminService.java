@@ -207,8 +207,10 @@ public class SuperAdminService {
                 throw new IllegalArgumentException("Organization not found: " + userSignUpRequestModel.getOrganization_id());
             }
             else {
-                //todo:Change default password from office number to sth else
-                String encPass = passwordEncoder.encode(userSignUpRequestModel.getOffice_number());
+
+                String oneTimePassword = String.valueOf(UUID.randomUUID()).substring(0,7);
+                System.out.println("ONE TIME PASSWORD::"+oneTimePassword);
+                String encPass = passwordEncoder.encode(oneTimePassword);
                 User newUser = new User();
 
                 List<Role> fetchedRoles = roleRepository.findAllById(userSignUpRequestModel.getRoleIds());
@@ -232,7 +234,7 @@ public class SuperAdminService {
                         organizationOptional.get(),
                         LocalDateTime.now(),
                         LocalDateTime.now());
-                newUserDetails.setVerified(true);
+                newUserDetails.setEnabled(true);
 
                 newUser.setUserDetails(newUserDetails);
                 userRepository.save(newUser);

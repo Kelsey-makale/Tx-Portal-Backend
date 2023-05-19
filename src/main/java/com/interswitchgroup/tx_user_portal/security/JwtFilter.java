@@ -41,7 +41,6 @@ public class JwtFilter extends OncePerRequestFilter {
             }
 
             String jwt = authorizationHeader.substring(7);
-            System.out.println("JWT::"+jwt);
             String userEmail = JwtUtil.getUsername(jwt);
             if(userEmail != null && SecurityContextHolder.getContext().getAuthentication() == null){
                 UserDetails userDetails = this.userDetailsService.loadUserByUsername(userEmail);
