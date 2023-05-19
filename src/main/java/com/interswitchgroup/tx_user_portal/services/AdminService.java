@@ -431,7 +431,7 @@ public class AdminService {
         else{
            User user = userOptional.get();
            if(account_status.equals(AccountStatus.ENABLE.name())){
-               user.getUserDetails().setVerified(true);
+               user.getUserDetails().setEnabled(true);
 
                //send email to bank user.
                emailService.sendMail(user.getEmailAddress(),
@@ -448,7 +448,7 @@ public class AdminService {
                auditLogsRepository.save(newLog);
            }
            else if(account_status.equals(AccountStatus.DISABLE.name())){
-               user.getUserDetails().setVerified(false);
+               user.getUserDetails().setEnabled(false);
 
                //log activity
                AuditLog newLog = new AuditLog(

@@ -32,6 +32,10 @@ public class UserDetails {
     @Column(name = "is_verified", columnDefinition = "boolean default false")
     private boolean isVerified;
 
+    //@Column(name = "is_enabled", columnDefinition = "BIT DEFAULT 0")
+    @Column(name = "is_enabled", columnDefinition = "boolean default false")
+    private boolean isEnabled;
+
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "organization_id", nullable = false)
     private Organization organization;
@@ -143,6 +147,14 @@ public class UserDetails {
 
     public void setVerified(boolean verified) {
         isVerified = verified;
+    }
+
+    public boolean isEnabled() {
+        return isEnabled;
+    }
+
+    public void setEnabled(boolean enabled) {
+        isEnabled = enabled;
     }
 
     @Override

@@ -112,7 +112,7 @@ public class User implements org.springframework.security.core.userdetails.UserD
     @Override
     //all users start off as disabled. Only the bank admin can enable them.
     public boolean isEnabled() {
-        return this.userDetails.isVerified();
+        return this.userDetails.isEnabled();
     }
 
     public void setPassword(String password) {

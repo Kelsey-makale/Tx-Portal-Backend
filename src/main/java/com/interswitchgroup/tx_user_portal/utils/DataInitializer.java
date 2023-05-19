@@ -82,7 +82,7 @@ public class DataInitializer implements CommandLineRunner {
                     organizationOptional.get(),
                     LocalDateTime.now(),
                     LocalDateTime.now());
-            superAdminDetails.setVerified(true);
+            superAdminDetails.setEnabled(true);
             superAdmin.setUserDetails(superAdminDetails);
 
             userRepository.save(superAdmin);

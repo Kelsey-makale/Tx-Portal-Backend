@@ -130,6 +130,13 @@ public class GenericService {
             Optional<User> userOptional = userRepository.findUserByEmailAddress(userSignInRequestModel.getEmail_address());
             User user = userOptional.orElseThrow(() -> new IllegalArgumentException("User not found with email: " + userSignInRequestModel.getEmail_address()));
 
+            //check role.
+            if(user.getPermission().equals(UserPermission.BANK_ADMIN)){
+                if(!user.getUserDetails().isVerified()){
+                    throw new IllegalArgumentException("Please reset your password to proceed");
+                }
+            }
+
             //create jwt
             CreatedUser createdUser = new CreatedUser(
                     user.getEmailAddress(),
@@ -148,7 +155,7 @@ public class GenericService {
                     Optional.of(responseData)
             );
 
-        } catch (AuthenticationException e) {
+        } catch (AuthenticationException | IllegalArgumentException e) {
             response.put("error", e.getMessage());
             responseModel = new UserResponseModel(
                     HttpStatus.EXPECTATION_FAILED.value(),
