@@ -4,6 +4,7 @@ import com.interswitchgroup.tx_user_portal.entities.Request;
 import com.interswitchgroup.tx_user_portal.entities.User;
 import com.interswitchgroup.tx_user_portal.models.RequestWithUserAndRolesDto;
 import com.interswitchgroup.tx_user_portal.models.request.CancelRequestModel;
+import com.interswitchgroup.tx_user_portal.models.request.UserEditRoleRequestModel;
 import com.interswitchgroup.tx_user_portal.models.request.UserRoleRequestModel;
 import com.interswitchgroup.tx_user_portal.models.response.UserResponseModel;
 import com.interswitchgroup.tx_user_portal.services.GenericService;
@@ -35,6 +36,11 @@ public class UserController {
     @PostMapping("/request")
     public ResponseEntity<String> makePermissionRequest(@RequestBody UserRoleRequestModel requestModel){
         genericService.makeRequest(requestModel);
+        return new ResponseEntity<>("Request logged successfully", HttpStatus.OK);
+    }
+    @PostMapping("/request/edit")
+    public ResponseEntity<String> editPermissionRequest(@RequestBody UserEditRoleRequestModel requestModel){
+        genericService.editRequest(requestModel);
         return new ResponseEntity<>("Request logged successfully", HttpStatus.OK);
     }
 

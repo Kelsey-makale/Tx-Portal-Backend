@@ -379,6 +379,36 @@ public class GenericService {
         }
     }
 
+    public void editRequest(UserEditRoleRequestModel requestModel){
+        //todo: figure out how to handle duplicates. A user making the same request twice.
+        UserResponseModel responseModel;
+        Map<String, Object> responseBody = new HashMap<>();
+
+        try{
+            Optional<Request> requestOptional = requestRepository.findRequestByRequestId(requestModel.getRequestId());
+            Request request = requestOptional.orElseThrow(() -> new IllegalArgumentException("Request not found: " + requestModel.getRequestId()));
+
+            List<Role> fetchedRoles = roleRepository.findAllById(requestModel.getRoleIds());
+
+            Set<Role> set = new HashSet<>(fetchedRoles);
+            request.setRoles(set);
+            requestRepository.save(request);
+
+            responseModel = new UserResponseModel(
+                    HttpStatus.OK.value(),
+                    "Request logged successfully."
+            );
+
+        }catch(IllegalArgumentException e){
+            responseBody.put("error", e.getMessage());
+            responseModel = new UserResponseModel(
+                    HttpStatus.EXPECTATION_FAILED.value(),
+                    "Failed to edit request",
+                    Optional.of(responseBody)
+            );
+        }
+    }
+
     public Page<Request> getMyRequests(int pageNumber, int pageSize) {
         try{
             User currentAdmin = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
