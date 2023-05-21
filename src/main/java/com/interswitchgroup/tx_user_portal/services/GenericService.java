@@ -379,7 +379,7 @@ public class GenericService {
         }
     }
 
-    public void editRequest(UserEditRoleRequestModel requestModel){
+    public UserResponseModel editRequest(UserEditRoleRequestModel requestModel){
         //todo: figure out how to handle duplicates. A user making the same request twice.
         UserResponseModel responseModel;
         Map<String, Object> responseBody = new HashMap<>();
@@ -388,16 +388,25 @@ public class GenericService {
             Optional<Request> requestOptional = requestRepository.findRequestByRequestId(requestModel.getRequestId());
             Request request = requestOptional.orElseThrow(() -> new IllegalArgumentException("Request not found: " + requestModel.getRequestId()));
 
-            List<Role> fetchedRoles = roleRepository.findAllById(requestModel.getRoleIds());
+            //check if request is still pending
+            if (request.getRequestStatus().name().equals("PENDING")){
+                List<Role> fetchedRoles = roleRepository.findAllById(requestModel.getRoleIds());
 
-            Set<Role> set = new HashSet<>(fetchedRoles);
-            request.setRoles(set);
-            requestRepository.save(request);
+                Set<Role> set = new HashSet<>(fetchedRoles);
+                request.setRoles(set);
+                requestRepository.save(request);
 
-            responseModel = new UserResponseModel(
-                    HttpStatus.OK.value(),
-                    "Request logged successfully."
-            );
+                responseModel = new UserResponseModel(
+                        HttpStatus.OK.value(),
+                        "Request logged successfully."
+                );
+            }
+            else{
+                responseModel = new UserResponseModel(
+                        HttpStatus.EXPECTATION_FAILED.value(),
+                        "The request cannot be modified at this time since its status is " + request.getRequestStatus().name()
+                );
+            }
 
         }catch(IllegalArgumentException e){
             responseBody.put("error", e.getMessage());
@@ -407,6 +416,7 @@ public class GenericService {
                     Optional.of(responseBody)
             );
         }
+        return responseModel;
     }
 
     public Page<Request> getMyRequests(int pageNumber, int pageSize) {
@@ -421,20 +431,43 @@ public class GenericService {
         }
     }
 
-    public void cancelRequest(CancelRequestModel cancelRequestModel){
+    public UserResponseModel cancelRequest(CancelRequestModel cancelRequestModel){
+        UserResponseModel responseModel;
+        Map<String, Object> responseBody = new HashMap<>();
+
         try{
             Optional<Request> requestOptional = requestRepository.findRequestByRequestId(cancelRequestModel.getRequest_id());
             if(requestOptional.isEmpty()){
                 throw new IllegalArgumentException("Request not found: " + cancelRequestModel.getRequest_id());
             }
             else {
-                Request foundRequest = requestOptional.get();
-                foundRequest.setRequestStatus(RequestStatus.CANCELLED);
-                requestRepository.save(foundRequest);
+                Request request = requestOptional.get();
+                if (request.getRequestStatus().name().equals("PENDING")){
+                    Request foundRequest = requestOptional.get();
+                    foundRequest.setRequestStatus(RequestStatus.CANCELLED);
+                    requestRepository.save(foundRequest);
+                    responseModel = new UserResponseModel(
+                            HttpStatus.OK.value(),
+                            "Request cancelled successfully."
+                    );
+                }else{
+                    responseModel = new UserResponseModel(
+                            HttpStatus.EXPECTATION_FAILED.value(),
+                            "The request cannot be modified at this time since its status is " + request.getRequestStatus().name()
+                    );
+                    }
             }
         }catch(Exception e){
             e.printStackTrace();
+            responseBody.put("error", e.getMessage());
+            responseModel = new UserResponseModel(
+                    HttpStatus.EXPECTATION_FAILED.value(),
+                    "Failed to edit request",
+                    Optional.of(responseBody)
+            );
         }
+
+        return responseModel;
     }
 
     /**

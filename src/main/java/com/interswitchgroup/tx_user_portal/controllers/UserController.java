@@ -39,9 +39,9 @@ public class UserController {
         return new ResponseEntity<>("Request logged successfully", HttpStatus.OK);
     }
     @PostMapping("/request/edit")
-    public ResponseEntity<String> editPermissionRequest(@RequestBody UserEditRoleRequestModel requestModel){
-        genericService.editRequest(requestModel);
-        return new ResponseEntity<>("Request logged successfully", HttpStatus.OK);
+    public ResponseEntity<UserResponseModel> editPermissionRequest(@RequestBody UserEditRoleRequestModel requestModel){
+        UserResponseModel userResponseModel =genericService.editRequest(requestModel);
+        return new ResponseEntity<>( userResponseModel,  HttpStatus.valueOf(userResponseModel.getStatus()));
     }
 
     @GetMapping("/my-requests")
@@ -56,9 +56,9 @@ public class UserController {
     }
 
     @PostMapping("/request/cancel")
-    public ResponseEntity<String> deleteRequest(@RequestBody CancelRequestModel requestModel){
-        genericService.cancelRequest(requestModel);
-        return new ResponseEntity<>("Request cancelled successfully", HttpStatus.OK);
+    public ResponseEntity<UserResponseModel> deleteRequest(@RequestBody CancelRequestModel requestModel){
+        UserResponseModel userResponseModel = genericService.cancelRequest(requestModel);
+        return new ResponseEntity<>(userResponseModel, HttpStatus.valueOf(userResponseModel.getStatus()));
     }
 
 }
