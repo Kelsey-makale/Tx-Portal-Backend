@@ -34,9 +34,9 @@ public class UserController {
     }
 
     @PostMapping("/request")
-    public ResponseEntity<String> makePermissionRequest(@RequestBody UserRoleRequestModel requestModel){
-        genericService.makeRequest(requestModel);
-        return new ResponseEntity<>("Request logged successfully", HttpStatus.OK);
+    public ResponseEntity<UserResponseModel> makePermissionRequest(@RequestBody UserRoleRequestModel requestModel){
+        UserResponseModel responseModel = genericService.makeRequest(requestModel);
+        return new ResponseEntity<>(responseModel, HttpStatus.valueOf(responseModel.getStatus()));
     }
     @PostMapping("/request/edit")
     public ResponseEntity<UserResponseModel> editPermissionRequest(@RequestBody UserEditRoleRequestModel requestModel){

@@ -1,6 +1,7 @@
 package com.interswitchgroup.tx_user_portal.repositories;
 
 import com.interswitchgroup.tx_user_portal.entities.Request;
+import com.interswitchgroup.tx_user_portal.entities.Role;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -11,6 +12,7 @@ import org.springframework.data.repository.query.Param;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 public interface RequestRepository  extends JpaRepository<Request, Long>, JpaSpecificationExecutor<Request> {
     Optional<Request> findRequestByRequestId(long request_id);
@@ -20,7 +22,7 @@ public interface RequestRepository  extends JpaRepository<Request, Long>, JpaSpe
 
 
     @Query(value = "DELETE FROM Request r " +
-            "WHERE r.requestId = 'request_id'")
+            "WHERE r.requestId =:request_id")
     void deleteRequestById(@Param("request_id")long request_id);
 
     @Query(value = "SELECT r FROM Request r " +
@@ -87,5 +89,10 @@ public interface RequestRepository  extends JpaRepository<Request, Long>, JpaSpe
                     "OR rl.role_name LIKE %:searchTerm%)")
     Page<Request> searchMyRequests(@Param("userId") long userId, @Param("searchTerm")String searchTerm, Pageable pageable);
 
+
+    @Query("SELECT r.roles FROM Request r " +
+            "JOIN r.user u " +
+            "WHERE u.userId = :userId")
+    Set<Role> getAllRolesFromRequests(@Param("userId") long userId);
 
 }

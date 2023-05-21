@@ -332,8 +332,7 @@ public class GenericService {
         return responseModel;
     }
 
-    public void makeRequest(UserRoleRequestModel requestModel){
-        //todo: figure out how to handle duplicates. A user making the same request twice.
+    public UserResponseModel makeRequest(UserRoleRequestModel requestModel){
         UserResponseModel responseModel;
         Map<String, Object> responseBody = new HashMap<>();
 
@@ -341,46 +340,70 @@ public class GenericService {
             Optional<User> userOptional = userRepository.findUserByUserId(requestModel.getUserId());
             User user = userOptional.orElseThrow(() -> new IllegalArgumentException("User not found: " + requestModel.getUserId()));
 
-            Request newRequest = new Request();
-            newRequest.setUser(user);
-            newRequest.setOrganizationId(user.getUserDetails().getOrganization().getOrganization_id());
-            newRequest.setRequestStatus(RequestStatus.PENDING);
-            newRequest.setDateCreated(LocalDateTime.now());
-            newRequest.setDateUpdated(LocalDateTime.now());
+            //todo:preventing duplicates:
+            //get all the roles the user has ever created
+            Set<Role> allMyRequests =  requestRepository.getAllRolesFromRequests(user.getUser_id());
 
+            //get all roles in the new request
             List<Role> fetchedRoles = roleRepository.findAllById(requestModel.getRoleIds());
+            Set<Role> set = new HashSet<>();
 
-            Set<Role> set = new HashSet<>(fetchedRoles);
-            newRequest.setRoles(set);
-            requestRepository.save(newRequest);
+            for(Role newRequestRole : fetchedRoles){
+                if(allMyRequests.contains(newRequestRole)){
+                    System.out.println("ROLE EXISTS:: " +newRequestRole.getRole_name());
+                    responseModel = new UserResponseModel(
+                            HttpStatus.EXPECTATION_FAILED.value(),
+                            "This role has already been requested."
+                    );
+                    throw new IllegalArgumentException("This role has already been requested.");
+                }else{
+                    set.add(newRequestRole);
+                }
+            }
 
-            responseModel = new UserResponseModel(
-                    HttpStatus.OK.value(),
-                    "Request logged successfully."
-            );
+            if(!set.isEmpty()){
+                Request newRequest = new Request();
+                newRequest.setUser(user);
+                newRequest.setOrganizationId(user.getUserDetails().getOrganization().getOrganization_id());
+                newRequest.setRequestStatus(RequestStatus.PENDING);
+                newRequest.setDateCreated(LocalDateTime.now());
+                newRequest.setDateUpdated(LocalDateTime.now());
 
-            //send email to bank user and cc bank admin(s).
-            String superAdminEmail = userRepository.getSuperAdmin();
-            List<String> bankAdminsEmails = userRepository.getMyAdmins(user.getUserDetails().getOrganization().getOrganization_id());
+                newRequest.setRoles(set);
+                requestRepository.save(newRequest);
 
-            emailService.sendMailWithCC(superAdminEmail,
-                    "Request pending Approval",
-                    "A new request is pending your approval. Please review and take necessary action.",
-                    bankAdminsEmails.toArray(new String[0]));
+                responseModel = new UserResponseModel(
+                        HttpStatus.OK.value(),
+                        "Request logged successfully."
+                );
 
+                //send email to bank user and cc bank admin(s).
+                String superAdminEmail = userRepository.getSuperAdmin();
+                List<String> bankAdminsEmails = userRepository.getMyAdmins(user.getUserDetails().getOrganization().getOrganization_id());
 
+                emailService.sendMailWithCC(superAdminEmail,
+                        "Request pending Approval",
+                        "A new request is pending your approval. Please review and take necessary action.",
+                        bankAdminsEmails.toArray(new String[0]));
+
+            }else{
+                responseModel = new UserResponseModel(
+                        HttpStatus.EXPECTATION_FAILED.value(),
+                        "This role has already been requested."
+                );
+            }
         }catch(IllegalArgumentException e){
             responseBody.put("error", e.getMessage());
             responseModel = new UserResponseModel(
                     HttpStatus.EXPECTATION_FAILED.value(),
-                    "Failed to log request",
+                    e.getMessage(),
                     Optional.of(responseBody)
             );
         }
+        return responseModel;
     }
 
     public UserResponseModel editRequest(UserEditRoleRequestModel requestModel){
-        //todo: figure out how to handle duplicates. A user making the same request twice.
         UserResponseModel responseModel;
         Map<String, Object> responseBody = new HashMap<>();
 
