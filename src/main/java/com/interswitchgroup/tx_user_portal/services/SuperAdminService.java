@@ -242,7 +242,7 @@ public class SuperAdminService {
                 //3. Send user email containing the OTP
                 emailService.sendMail(newUser.getEmailAddress(),
                         "Account Created",
-                        "Your account has been successfully created on the TX User & Role Management Portal. Reach out to the InfoSec team to get your login credentials.");
+                        "Your account has been successfully created on the TX User & Role Management Portal. Your login credentials are your email address and your One time password is: "+ oneTimePassword );
 
                 //log activity
                 System.out.println("AUTHENTICATED USER::"+ authenticatedUser.toString());
