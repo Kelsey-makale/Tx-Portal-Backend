@@ -200,7 +200,7 @@ public class GenericService {
 
 
         //4. Send user email containing the OTP
-        emailService.sendMail(user.getEmailAddress(), "Verify Account", "Your OTP is" + generatedOTP);
+        emailService.sendMail(user.getEmailAddress(), "Verify Account", "Your OTP is " + generatedOTP);
         System.out.println("YOUR OTP IS :: "+ generatedOTP);
     }
 
