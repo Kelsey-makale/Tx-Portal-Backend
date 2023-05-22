@@ -40,7 +40,7 @@ public class DataInitializer implements CommandLineRunner {
     public void run(String... args) throws Exception {
         Role role1 = new Role(1, "Basic user role", "Basic role, limited access to card data.");
         Role role2 = new Role(2, "Hot card role", "User can block and disable cards.");
-        Role role3 = new Role(3, "Cold card role", "Lorem ipsum dolor sit amet.");
+        Role role3 = new Role(3, "Cool card role", "Lorem ipsum dolor sit amet.");
         Role role4 = new Role(4, "Monitoring role", "User can monitor all bank related transactions.");
         roleRepository.saveAll(Arrays.asList(role1, role2, role3, role4));
 
