@@ -90,9 +90,10 @@ public interface RequestRepository  extends JpaRepository<Request, Long>, JpaSpe
     Page<Request> searchMyRequests(@Param("userId") long userId, @Param("searchTerm")String searchTerm, Pageable pageable);
 
 
-    @Query("SELECT r.roles FROM Request r " +
+    @Query("SELECT r FROM Request r " +
             "JOIN r.user u " +
-            "WHERE u.userId = :userId")
-    Set<Role> getAllRolesFromRequests(@Param("userId") long userId);
+            "WHERE u.userId = :userId " +
+            "AND r.requestStatus = 'PENDING'")
+    List<Request> getAllMyPendingRequests(@Param("userId") long userId);
 
 }

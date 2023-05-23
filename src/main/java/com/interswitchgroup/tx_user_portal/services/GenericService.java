@@ -340,28 +340,21 @@ public class GenericService {
             Optional<User> userOptional = userRepository.findUserByUserId(requestModel.getUserId());
             User user = userOptional.orElseThrow(() -> new IllegalArgumentException("User not found: " + requestModel.getUserId()));
 
-            //todo:preventing duplicates:
-            //get all the roles the user has ever created
-            Set<Role> allMyRequests =  requestRepository.getAllRolesFromRequests(user.getUser_id());
+            //todo:preventing duplicates: By blocking user from making more than one request if one is pending
+            List<Request> allMyRequests =  requestRepository.getAllMyPendingRequests(user.getUser_id());
 
-            //get all roles in the new request
-            List<Role> fetchedRoles = roleRepository.findAllById(requestModel.getRoleIds());
-            Set<Role> set = new HashSet<>();
+            if(allMyRequests.size() > 0){
+                responseModel = new UserResponseModel(
+                        HttpStatus.EXPECTATION_FAILED.value(),
+                        "You have pending requests that need to be approved first."
+                );
+                throw new IllegalArgumentException("You have pending requests that need to be approved first.");
+            }else{
+                //get all roles in the new request
+                List<Role> fetchedRoles = roleRepository.findAllById(requestModel.getRoleIds());
+                Set<Role> set = new HashSet<>(fetchedRoles);
 
-            for(Role newRequestRole : fetchedRoles){
-                if(allMyRequests.contains(newRequestRole)){
-                    System.out.println("ROLE EXISTS:: " +newRequestRole.getRole_name());
-                    responseModel = new UserResponseModel(
-                            HttpStatus.EXPECTATION_FAILED.value(),
-                            "This role has already been requested."
-                    );
-                    throw new IllegalArgumentException("This role has already been requested.");
-                }else{
-                    set.add(newRequestRole);
-                }
-            }
 
-            if(!set.isEmpty()){
                 Request newRequest = new Request();
                 newRequest.setUser(user);
                 newRequest.setOrganizationId(user.getUserDetails().getOrganization().getOrganization_id());
@@ -386,11 +379,6 @@ public class GenericService {
                         "A new request is pending your approval. Please review and take necessary action.",
                         bankAdminsEmails.toArray(new String[0]));
 
-            }else{
-                responseModel = new UserResponseModel(
-                        HttpStatus.EXPECTATION_FAILED.value(),
-                        "This role has already been requested."
-                );
             }
         }catch(IllegalArgumentException e){
             responseBody.put("error", e.getMessage());
