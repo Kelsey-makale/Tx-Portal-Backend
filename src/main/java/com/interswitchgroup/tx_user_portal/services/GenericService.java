@@ -227,7 +227,7 @@ public class GenericService {
                     response.put("error", "Invalid OTP");
                     responseModel = new UserResponseModel(
                             HttpStatus.EXPECTATION_FAILED.value(),
-                            "Failed to verify user",
+                            "Failed to verify user.OTP is invalid.",
                             Optional.of(response)
                     );
                 }
