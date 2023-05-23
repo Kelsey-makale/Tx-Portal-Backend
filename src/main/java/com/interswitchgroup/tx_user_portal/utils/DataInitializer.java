@@ -1,9 +1,6 @@
 package com.interswitchgroup.tx_user_portal.utils;
 
-import com.interswitchgroup.tx_user_portal.entities.Organization;
-import com.interswitchgroup.tx_user_portal.entities.Role;
-import com.interswitchgroup.tx_user_portal.entities.User;
-import com.interswitchgroup.tx_user_portal.entities.UserDetails;
+import com.interswitchgroup.tx_user_portal.entities.*;
 import com.interswitchgroup.tx_user_portal.repositories.OrganizationRepository;
 import com.interswitchgroup.tx_user_portal.repositories.RoleRepository;
 import com.interswitchgroup.tx_user_portal.repositories.UserRepository;

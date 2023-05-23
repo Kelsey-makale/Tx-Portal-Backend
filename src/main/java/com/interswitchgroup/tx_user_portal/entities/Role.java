@@ -2,6 +2,7 @@ package com.interswitchgroup.tx_user_portal.entities;
 
 import jakarta.persistence.*;
 
+import java.util.List;
 import java.util.Set;
 
 @Entity
@@ -59,6 +60,5 @@ public class Role {
     public void setRole_description(String role_description) {
         this.role_description = role_description;
     }
-
 
 }
