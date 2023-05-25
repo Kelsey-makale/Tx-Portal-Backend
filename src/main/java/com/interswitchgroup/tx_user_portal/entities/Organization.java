@@ -14,7 +14,7 @@ public class Organization {
     @Column(name = "org_name", nullable = false)
     private String organizationName;
 
-    @ManyToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(name = "OrganizationRoles", joinColumns = {
             @JoinColumn(name = "organizationId", referencedColumnName = "org_id")
     }, inverseJoinColumns = {@JoinColumn(name = "roleId", referencedColumnName = "role_id")})

@@ -18,8 +18,6 @@ import org.springframework.http.*;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 
 import java.io.ByteArrayInputStream;
 import java.time.LocalDateTime;
@@ -35,9 +33,11 @@ public class SuperAdminService {
     private final EmailService emailService;
     private final AuditLogsRepository auditLogsRepository;
     private final ExportService exportService;
+    private final OrgRoleRightsRepository orgRoleRightsRepository;
+    private final RightsRepository rightsRepository;
 
     @Autowired
-    public SuperAdminService(RequestRepository requestRepository, UserRepository userRepository, UserDetailsRepository userDetailsRepository, RoleRepository roleRepository, OrganizationRepository organizationRepository, EmailService emailService, AuditLogsRepository auditLogsRepository, ExportService exportService) {
+    public SuperAdminService(RequestRepository requestRepository, UserRepository userRepository, UserDetailsRepository userDetailsRepository, RoleRepository roleRepository, OrganizationRepository organizationRepository, EmailService emailService, AuditLogsRepository auditLogsRepository, ExportService exportService, OrgRoleRightsRepository orgRoleRightsRepository, RightsRepository rightsRepository) {
         this.requestRepository = requestRepository;
         this.userRepository = userRepository;
         this.userDetailsRepository = userDetailsRepository;
@@ -46,6 +46,8 @@ public class SuperAdminService {
         this.emailService = emailService;
         this.auditLogsRepository = auditLogsRepository;
         this.exportService = exportService;
+        this.orgRoleRightsRepository = orgRoleRightsRepository;
+        this.rightsRepository = rightsRepository;
     }
 
     @Autowired
@@ -62,15 +64,41 @@ public class SuperAdminService {
 
         if(organizationOptional.isPresent()){
             throw new IllegalArgumentException("ORGANIZATION PROVIDED ALREADY EXISTS " + org_name);
-        }else{
+        }
+        else{
             Organization newOrg = new Organization();
-            newOrg.setOrganization_name(org_name);
+            Set<Role> selectedRoles = new HashSet<>();
+            List<OrganizationRoleRights> organizationRoleRightsList = new ArrayList<>();
 
-            List<Role> fetchedRoles = roleRepository.findAllById(requestModel.getRoleIds());
-            Set<Role> set = new HashSet<>(fetchedRoles);
-            newOrg.setRoles(set);
+            //first create the organization
+            List<NewOrganizationRequestModel.RoleData> orgRoleData = requestModel.getRoles();
+            for (NewOrganizationRequestModel.RoleData roleData: orgRoleData) {
+                Optional<Role> optionalRole = roleRepository.findById(roleData.getRoleId());
+                Role foundRole = optionalRole.orElseThrow(() -> new IllegalArgumentException("Role not found"));
+
+                selectedRoles.add(foundRole);
+
+                //populate composite key table
+                for(Long rightId : roleData.getRightIds()){
+                    Optional<Right> optionalRight = rightsRepository.findById(rightId);
+                    Right foundRight = optionalRight.orElseThrow(() -> new IllegalArgumentException("Right not found"));
+
+                    OrganizationRoleRights newOrgRight = new OrganizationRoleRights();
+                    newOrgRight.setOrganization(newOrg);
+                    newOrgRight.setRole(foundRole);
+                    newOrgRight.setRight(foundRight);
+
+                    organizationRoleRightsList.add(newOrgRight);
+
+                }
+            }
+
+            newOrg.setOrganization_name(org_name);
+            newOrg.setRoles(selectedRoles);
 
             organizationRepository.save(newOrg);
+            orgRoleRightsRepository.saveAll(organizationRoleRightsList);
+
         }
     }
 
