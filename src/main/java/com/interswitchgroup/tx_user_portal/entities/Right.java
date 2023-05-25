@@ -7,7 +7,6 @@ import jakarta.persistence.*;
 public class Right {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "right_id", updatable = false)
     private long right_id;
 
     @Column(name = "right_name", nullable = false)

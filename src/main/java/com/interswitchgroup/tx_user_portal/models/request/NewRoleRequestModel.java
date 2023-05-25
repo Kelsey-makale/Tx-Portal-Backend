@@ -1,15 +1,17 @@
 package com.interswitchgroup.tx_user_portal.models.request;
 
+import java.util.List;
+
 public class NewRoleRequestModel {
     private String role_name;
-    private String role_description;
+    private List<String> role_rights;
 
     public NewRoleRequestModel() {
     }
 
-    public NewRoleRequestModel(String role_name, String role_description) {
+    public NewRoleRequestModel(String role_name, List<String> role_rights) {
         this.role_name = role_name;
-        this.role_description = role_description;
+        this.role_rights = role_rights;
     }
 
     public String getRole_name() {
@@ -20,11 +22,11 @@ public class NewRoleRequestModel {
         this.role_name = role_name;
     }
 
-    public String getRole_description() {
-        return role_description;
+    public List<String> getRole_rights() {
+        return role_rights;
     }
 
-    public void setRole_description(String role_description) {
-        this.role_description = role_description;
+    public void setRole_rights(List<String> role_rights) {
+        this.role_rights = role_rights;
     }
 }

@@ -35,24 +35,40 @@ public class DataInitializer implements CommandLineRunner {
 
     @Override
     public void run(String... args) throws Exception {
-        Role role1 = new Role(1, "Basic user role", "Basic role, limited access to card data.");
-        Role role2 = new Role(2, "Hot card role", "User can block and disable cards.");
-        Role role3 = new Role(3, "Cool card role", "Lorem ipsum dolor sit amet.");
-        Role role4 = new Role(4, "Monitoring role", "User can monitor all bank related transactions.");
-        roleRepository.saveAll(Arrays.asList(role1, role2, role3, role4));
+
+        //------------------ROLES & RIGHTS---------------------------------
+
+        Role role1 = new Role(1, "Basic user role", "");
+        Role role2 = new Role(2, "Hot card role", "");
+        Role role3 = new Role(3, "Cool card role", "");
+        Role role4 = new Role(4, "Monitoring role", "");
 
 
-        Set<Role> set = new HashSet<>();
-        set.add(role1);
-        set.add(role2);
+        Right right1 =  new Right("PAN Viewer", "");
+        Right right2 = new Right("Individual Customer Viewer", "");
+        Right right3 = new Right("Token Viewer", "");
+        Right right4 = new Right("Card Blocking", "");
 
-        Organization org1 = new Organization(1, "Guardian Bank",set);
-        Organization org2 = new Organization(2, "Family Bank Ltd", set);
-        Organization org3 = new Organization(3, "Mayfair Bank", set);
-        Organization org4 = new Organization(4, "Paramount Bank", set);
-        Organization org5 = new Organization(5, "Sterling Bank", set);
+
+        role1.getRights().add(right1);
+        role1.getRights().add(right2);
+        role1.getRights().add(right3);
+
+        role2.getRights().add(right4);
+        roleRepository.saveAll(List.of(role1, role2, role3, role4));
+
+
+        //------------------ORGANIZATIONS---------------------------------
+        Organization org1 = new Organization(1, "Guardian Bank");
+        Organization org2 = new Organization(2, "Family Bank Ltd");
+        Organization org3 = new Organization(3, "Mayfair Bank");
+        Organization org4 = new Organization(4, "Paramount Bank");
+        Organization org5 = new Organization(5, "Sterling Bank");
 
         orderRepository.saveAll(Arrays.asList(org1, org2, org3, org4, org5));
+
+
+        //------------------SUPER ADMIN---------------------------------
 
 
         Optional<User> userOptional = userRepository.findUserByEmailAddress("joe.mak@example.com");

@@ -35,7 +35,6 @@ public class Request {
     @JoinColumn(name = "requestId", referencedColumnName = "requestId")
     private List<Comment> comment;
 
-
     @Enumerated(EnumType.STRING)
     private RequestStatus requestStatus;
 

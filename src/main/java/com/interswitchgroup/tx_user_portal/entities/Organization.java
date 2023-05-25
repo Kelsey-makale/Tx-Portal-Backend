@@ -24,10 +24,9 @@ public class Organization {
     public Organization() {
     }
 
-    public Organization(long organizationId, String organizationName, Set<Role> roles) {
+    public Organization(long organizationId, String organizationName) {
         this.organizationId = organizationId;
         this.organizationName = organizationName;
-        this.roles = roles;
     }
 
     public Set<Role> getRoles() {

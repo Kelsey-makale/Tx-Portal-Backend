@@ -2,6 +2,7 @@ package com.interswitchgroup.tx_user_portal.entities;
 
 import jakarta.persistence.*;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
@@ -18,6 +19,10 @@ public class Role {
 
     @Column(name = "role_description", nullable = false)
     private String role_description;
+
+    @OneToMany(cascade = CascadeType.ALL)
+    @JoinColumn(name = "roleId", referencedColumnName = "role_id")
+    private List<Right> rights = new ArrayList<>();
 
     @ManyToMany(mappedBy = "roles", fetch = FetchType.LAZY)
     private Set<Request> requests;
@@ -61,4 +66,11 @@ public class Role {
         this.role_description = role_description;
     }
 
+    public List<Right> getRights() {
+        return rights;
+    }
+
+    public void setRights(List<Right> rights) {
+        this.rights = rights;
+    }
 }

@@ -142,7 +142,11 @@ public class SuperAdminService {
         }else{
             Role newRole = new Role();
             newRole.setRole_name(role_name);
-            newRole.setRole_description(requestModel.getRole_description());
+
+            for(String rightName : requestModel.getRole_rights()){
+                newRole.getRights().add(new Right(rightName, ""));
+            }
+            newRole.setRole_description("");
             roleRepository.save(newRole);
         }
     }
