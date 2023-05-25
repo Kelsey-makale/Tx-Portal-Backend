@@ -102,14 +102,14 @@ public class SuperAdminService {
         }
     }
 
-    public Page<Organization> getAllOrganizations(int pageNumber,int pageSize){
+    public Page<OrganizationRoleRights> getAllOrganizations(int pageNumber, int pageSize){
         try{
             User currentAdmin = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
             String user_permission = String.valueOf(currentAdmin.getPermission());
 
             if(user_permission.equals("ADMIN") ){
                 Pageable pageable = PageRequest.of(pageNumber, pageSize);
-                return organizationRepository.findAll(pageable);
+                return orgRoleRightsRepository.findAllORR(pageable);
             }
             else{
                 throw new IllegalArgumentException("User is not authorized to make this request");

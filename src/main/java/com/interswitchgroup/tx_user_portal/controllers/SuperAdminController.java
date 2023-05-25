@@ -97,8 +97,8 @@ public class SuperAdminController {
     }
 
     @GetMapping("/organizations")
-    public ResponseEntity<Page<Organization>> getOrganizationData(@RequestParam(defaultValue = "0") int pageNumber, @RequestParam(defaultValue = "10") int pageSize){
-        Page<Organization> allRequests = superAdminService.getAllOrganizations(pageNumber,pageSize);
+    public ResponseEntity<Page<OrganizationRoleRights>> getOrganizationData(@RequestParam(defaultValue = "0") int pageNumber, @RequestParam(defaultValue = "10") int pageSize){
+        Page<OrganizationRoleRights> allRequests = superAdminService.getAllOrganizations(pageNumber,pageSize);
         return new ResponseEntity<>(allRequests, HttpStatus.OK);
     }
 
