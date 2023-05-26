@@ -117,6 +117,23 @@ public class SuperAdminService {
         }
     }
 
+    public List<OrganizationRightsResponseModel.RoleDataModel> fetchMyOrganizationRoles(){
+        try{
+            User currentUser = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+            long myOrgId = currentUser.getUserDetails().getOrganization().getOrganizationId();
+            Optional<Organization> organizationOptional = organizationRepository.findByOrganizationId(myOrgId);
+
+            if(organizationOptional.isPresent()){
+                return mapToRolesDTO(organizationOptional.get().getRoles(), organizationOptional.get().getRights());
+            }else{
+                throw new IllegalArgumentException("Organization not found.");
+            }
+        } catch (Exception e){
+            e.printStackTrace();
+            return null;
+        }
+    }
+
     ///---------------------MAPPING METHODS TO DTO---------------------------------
     private OrganizationRightsResponseModel mapToOrganizationDTO(Organization organization) {
         OrganizationRightsResponseModel orgDTO = new OrganizationRightsResponseModel();
@@ -200,7 +217,6 @@ public class SuperAdminService {
      * Function to add/ create a new role
      */
     public void addNewRole(NewRoleRequestModel requestModel){
-
         //check if role already exists
         String role_name = requestModel.getRole_name();
         Optional<Role> roleOptional = roleRepository.findByRoleName(role_name);
@@ -212,7 +228,12 @@ public class SuperAdminService {
             newRole.setRole_name(role_name);
 
             for(String rightName : requestModel.getRole_rights()){
-                newRole.getRights().add(new Right(rightName, ""));
+                Right newRight = new Right();
+                newRight.setRight_name(rightName);
+                newRight.setRight_description("");
+                rightsRepository.save(newRight);
+
+                newRole.getRights().add(newRight);
             }
             newRole.setRole_description("");
             roleRepository.save(newRole);

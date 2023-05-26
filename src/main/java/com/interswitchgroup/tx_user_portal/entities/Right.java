@@ -27,7 +27,8 @@ public class Right {
     public Right() {
     }
 
-    public Right(String right_name, String right_description) {
+    public Right(long right_id, String right_name, String right_description) {
+        this.right_id = right_id;
         this.right_name = right_name;
         this.right_description = right_description;
     }

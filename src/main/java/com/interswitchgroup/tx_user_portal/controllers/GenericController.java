@@ -2,6 +2,7 @@ package com.interswitchgroup.tx_user_portal.controllers;
 
 import com.interswitchgroup.tx_user_portal.entities.User;
 import com.interswitchgroup.tx_user_portal.models.request.*;
+import com.interswitchgroup.tx_user_portal.models.response.OrganizationRightsResponseModel;
 import com.interswitchgroup.tx_user_portal.models.response.UserResponseModel;
 import com.interswitchgroup.tx_user_portal.services.GenericService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,6 +21,8 @@ import java.util.Map;
 public class GenericController {
 
     private final GenericService genericService;
+
+
     @Autowired
     public GenericController(GenericService genericService) {
         this.genericService = genericService;
