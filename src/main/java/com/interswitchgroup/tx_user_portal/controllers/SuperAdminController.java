@@ -4,6 +4,7 @@ import com.interswitchgroup.tx_user_portal.entities.*;
 import com.interswitchgroup.tx_user_portal.models.request.AdminSignUpRequestModel;
 import com.interswitchgroup.tx_user_portal.models.request.NewOrganizationRequestModel;
 import com.interswitchgroup.tx_user_portal.models.request.NewRoleRequestModel;
+import com.interswitchgroup.tx_user_portal.models.response.OrganizationRightsResponseModel;
 import com.interswitchgroup.tx_user_portal.models.response.UserResponseModel;
 import com.interswitchgroup.tx_user_portal.services.AdminService;
 import com.interswitchgroup.tx_user_portal.services.SuperAdminService;
@@ -97,13 +98,13 @@ public class SuperAdminController {
     }
 
     @GetMapping("/organizations")
-    public ResponseEntity<Page<OrganizationRoleRights>> getOrganizationData(@RequestParam(defaultValue = "0") int pageNumber, @RequestParam(defaultValue = "10") int pageSize){
-        Page<OrganizationRoleRights> allRequests = superAdminService.getAllOrganizations(pageNumber,pageSize);
+    public ResponseEntity<Page<OrganizationRightsResponseModel>> getOrganizationData(@RequestParam(defaultValue = "0") int pageNumber, @RequestParam(defaultValue = "10") int pageSize){
+        Page<OrganizationRightsResponseModel> allRequests = superAdminService.getAllOrganizations(pageNumber,pageSize);
         return new ResponseEntity<>(allRequests, HttpStatus.OK);
     }
 
     @GetMapping("/search/organizations")
-    public ResponseEntity<Page<Organization>> fuzzySearchOrgz(@RequestParam String searchTerm, @RequestParam(defaultValue = "0") int pageNumber, @RequestParam(defaultValue = "10") int pageSize){
+    public ResponseEntity<Page<OrganizationRightsResponseModel>> fuzzySearchOrgz(@RequestParam String searchTerm, @RequestParam(defaultValue = "0") int pageNumber, @RequestParam(defaultValue = "10") int pageSize){
         return new ResponseEntity<>(superAdminService.fuzzySearchOrgz(searchTerm, pageNumber, pageSize), HttpStatus.OK);
     }
 }

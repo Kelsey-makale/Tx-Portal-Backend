@@ -2,6 +2,7 @@ package com.interswitchgroup.tx_user_portal.utils;
 
 import com.interswitchgroup.tx_user_portal.entities.*;
 import com.interswitchgroup.tx_user_portal.repositories.OrganizationRepository;
+import com.interswitchgroup.tx_user_portal.repositories.RightsRepository;
 import com.interswitchgroup.tx_user_portal.repositories.RoleRepository;
 import com.interswitchgroup.tx_user_portal.repositories.UserRepository;
 import com.interswitchgroup.tx_user_portal.utils.Enums.UserPermission;
@@ -22,13 +23,15 @@ public class DataInitializer implements CommandLineRunner {
     private final OrganizationRepository orderRepository;
     private final RoleRepository roleRepository;
     private final UserRepository userRepository;
+    private final RightsRepository rightsRepository;
     private final OrganizationRepository organizationRepository;
     PasswordEncoder passwordEncoder;
 
-    public DataInitializer(OrganizationRepository orderRepository, RoleRepository roleRepository, UserRepository userRepository, OrganizationRepository organizationRepository, PasswordEncoder passwordEncoder) {
+    public DataInitializer(OrganizationRepository orderRepository, RoleRepository roleRepository, UserRepository userRepository, RightsRepository rightsRepository, OrganizationRepository organizationRepository, PasswordEncoder passwordEncoder) {
         this.orderRepository = orderRepository;
         this.roleRepository = roleRepository;
         this.userRepository = userRepository;
+        this.rightsRepository = rightsRepository;
         this.organizationRepository = organizationRepository;
         this.passwordEncoder = passwordEncoder;
     }
@@ -42,13 +45,13 @@ public class DataInitializer implements CommandLineRunner {
         Role role2 = new Role(2, "Hot card role", "");
         Role role3 = new Role(3, "Cool card role", "");
         Role role4 = new Role(4, "Monitoring role", "");
-
+        roleRepository.saveAll(List.of(role1, role2, role3, role4));
 
         Right right1 =  new Right("PAN Viewer", "");
         Right right2 = new Right("Individual Customer Viewer", "");
         Right right3 = new Right("Token Viewer", "");
         Right right4 = new Right("Card Blocking", "");
-
+        rightsRepository.saveAll(List.of(right1, right2, right3, right4));
 
         role1.getRights().add(right1);
         role1.getRights().add(right2);

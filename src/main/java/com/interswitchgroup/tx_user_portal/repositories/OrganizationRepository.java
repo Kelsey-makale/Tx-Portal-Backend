@@ -13,6 +13,7 @@ import java.util.List;
 import java.util.Optional;
 
 public interface OrganizationRepository extends JpaRepository<Organization, Long> {
+
     Optional<Organization> findByOrganizationId(long organization_id);
     Optional<Organization> findByOrganizationName(String organization_name);
 
