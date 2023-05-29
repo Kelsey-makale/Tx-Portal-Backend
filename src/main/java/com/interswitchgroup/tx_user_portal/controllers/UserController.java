@@ -2,12 +2,13 @@ package com.interswitchgroup.tx_user_portal.controllers;
 
 import com.interswitchgroup.tx_user_portal.entities.Request;
 import com.interswitchgroup.tx_user_portal.entities.User;
-import com.interswitchgroup.tx_user_portal.models.RequestWithUserAndRolesDto;
 import com.interswitchgroup.tx_user_portal.models.request.CancelRequestModel;
 import com.interswitchgroup.tx_user_portal.models.request.UserEditRoleRequestModel;
 import com.interswitchgroup.tx_user_portal.models.request.UserRoleRequestModel;
+import com.interswitchgroup.tx_user_portal.models.response.OrganizationRightsResponseModel;
 import com.interswitchgroup.tx_user_portal.models.response.UserResponseModel;
 import com.interswitchgroup.tx_user_portal.services.GenericService;
+import com.interswitchgroup.tx_user_portal.services.SuperAdminService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
@@ -22,15 +23,22 @@ import java.util.List;
 public class UserController {
 
     private final GenericService genericService;
+    private final SuperAdminService superAdminService;
 
     @Autowired
-    public UserController(GenericService genericService) {
+    public UserController(GenericService genericService, SuperAdminService superAdminService) {
         this.genericService = genericService;
+        this.superAdminService = superAdminService;
     }
 
     @GetMapping("/roles")
     public ResponseEntity<UserResponseModel> getRoleData(){
         return new ResponseEntity<>(genericService.getRoleData(), HttpStatus.OK);
+    }
+
+    @GetMapping("/my-roles")
+    public ResponseEntity<List<OrganizationRightsResponseModel.RoleDataModel>> getMyRoles(){
+        return new ResponseEntity<>(superAdminService.fetchMyOrganizationRoles(), HttpStatus.OK);
     }
 
     @PostMapping("/request")

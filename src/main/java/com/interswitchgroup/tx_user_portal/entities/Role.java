@@ -20,8 +20,10 @@ public class Role {
     @Column(name = "role_description", nullable = false)
     private String role_description;
 
-    @OneToMany(cascade = CascadeType.ALL)
-    @JoinColumn(name = "roleId", referencedColumnName = "role_id")
+    @ManyToMany
+    @JoinTable(name = "role_right", joinColumns = {
+            @JoinColumn(name = "role_id", referencedColumnName = "role_id")
+    }, inverseJoinColumns = {@JoinColumn(name = "right_id", referencedColumnName = "right_id")})
     private List<Right> rights = new ArrayList<>();
 
     @ManyToMany(mappedBy = "roles", fetch = FetchType.LAZY)
