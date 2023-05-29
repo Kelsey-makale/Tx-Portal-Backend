@@ -36,7 +36,7 @@ public class UserController {
         return new ResponseEntity<>(genericService.getRoleData(), HttpStatus.OK);
     }
 
-    @GetMapping("my-roles")
+    @GetMapping("/my-roles")
     public ResponseEntity<List<OrganizationRightsResponseModel.RoleDataModel>> getMyRoles(){
         return new ResponseEntity<>(superAdminService.fetchMyOrganizationRoles(), HttpStatus.OK);
     }

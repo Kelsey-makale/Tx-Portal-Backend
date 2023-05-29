@@ -52,7 +52,7 @@ public class DataInitializer implements CommandLineRunner {
         Right right4 = new Right(4, "Card Blocking", "");
         rightsRepository.saveAll(List.of(right1, right2, right3, right4));
 
-        role1.setRights(List.of(right1, right2, right3, right4));
+        role1.setRights(List.of(right1, right2, right3));
         role2.setRights(List.of(right4));
         roleRepository.saveAll(List.of(role1, role2, role3, role4));
 

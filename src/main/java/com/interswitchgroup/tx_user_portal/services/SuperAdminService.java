@@ -159,6 +159,9 @@ public class SuperAdminService {
     }
 
     private List<OrganizationRightsResponseModel.RightDataModel> convertRightsToDTO(List<Right> rights,List<Right> orgRights) {
+        System.out.println("ROLE RIGHTS:: " + rights.size());
+        System.out.println("ORG RIGHTS:: " + orgRights.size());
+
         return rights.stream()
                 .flatMap(right -> orgRights.stream()
                         .filter(orgRight -> orgRight.getRight_name().equals(right.getRight_name()))
