@@ -43,8 +43,7 @@ public class DataInitializer implements CommandLineRunner {
 
         Role role1 = new Role(1, "Basic user role", "");
         Role role2 = new Role(2, "Hot card role", "");
-        Role role3 = new Role(3, "Cool card role", "");
-        Role role4 = new Role(4, "Monitoring role", "");
+
 
         Right right1 =  new Right(1,"PAN Viewer", "");
         Right right2 = new Right(2,"Individual Customer Viewer", "");
@@ -54,7 +53,7 @@ public class DataInitializer implements CommandLineRunner {
 
         role1.setRights(List.of(right1, right2, right3));
         role2.setRights(List.of(right4));
-        roleRepository.saveAll(List.of(role1, role2, role3, role4));
+        roleRepository.saveAll(List.of(role1, role2));
 
 
         //------------------ORGANIZATIONS---------------------------------
