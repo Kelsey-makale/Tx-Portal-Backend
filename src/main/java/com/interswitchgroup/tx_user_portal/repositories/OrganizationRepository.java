@@ -15,7 +15,11 @@ import java.util.Optional;
 public interface OrganizationRepository extends JpaRepository<Organization, Long> {
 
     Optional<Organization> findByOrganizationId(long organization_id);
-    Optional<Organization> findByOrganizationName(String organization_name);
+
+    @Query(value = "SELECT o FROM Organization o " +
+            "WHERE REPLACE(o.organizationName, ' ', '') = REPLACE(:searchTerm, ' ', '')"
+    )
+    Optional<Organization> findByOrganizationName(@Param("searchTerm")String organization_name);
 
     @Query(value = "SELECT o FROM Organization o " +
             "LEFT JOIN FETCH o.roles or " +

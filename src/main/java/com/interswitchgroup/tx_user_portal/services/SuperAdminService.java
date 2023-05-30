@@ -56,46 +56,61 @@ public class SuperAdminService {
     /**
      * Function to add/create a new organization
      */
-    public void addNewOrganization(NewOrganizationRequestModel requestModel){
+    public UserResponseModel addNewOrganization(NewOrganizationRequestModel requestModel){
+        UserResponseModel responseModel;
+        Map<String, Object> responseBody = new HashMap<>();
+        try{
+            //check if organization already exists
+            String org_name = requestModel.getOrganization_name();
+            Optional<Organization> organizationOptional = organizationRepository.findByOrganizationName(org_name);
 
-        //check if organization already exists
-        String org_name = requestModel.getOrganization_name();
-        Optional<Organization> organizationOptional = organizationRepository.findByOrganizationName(org_name);
-
-        if(organizationOptional.isPresent()){
-            throw new IllegalArgumentException("ORGANIZATION PROVIDED ALREADY EXISTS " + org_name);
-        }
-        else{
-            Organization newOrg = new Organization();
-            List<Role> selectedRoles = new ArrayList<>();
-            List<Right> organizationRightsList = new ArrayList<>();
-
-            //first create the organization
-            List<NewOrganizationRequestModel.RoleData> orgRoleData = requestModel.getRoles();
-            for (NewOrganizationRequestModel.RoleData roleData: orgRoleData) {
-                Optional<Role> optionalRole = roleRepository.findById(roleData.getRoleId());
-                Role foundRole = optionalRole.orElseThrow(() -> new IllegalArgumentException("Role not found :: "
-                +roleData.getRoleId() ));
-
-                selectedRoles.add(foundRole);
-
-                //populate composite key table
-                for(Long rightId : roleData.getRightIds()){
-                    Optional<Right> optionalRight = rightsRepository.findById(rightId);
-                    Right foundRight = optionalRight.orElseThrow(() -> new IllegalArgumentException("Right not found"));
-
-                    organizationRightsList.add(foundRight);
-
-                }
+            if(organizationOptional.isPresent()){
+                throw new IllegalArgumentException("The Organization provided already exists " + org_name);
             }
+            else{
+                Organization newOrg = new Organization();
+                List<Role> selectedRoles = new ArrayList<>();
+                List<Right> organizationRightsList = new ArrayList<>();
 
-            newOrg.setOrganization_name(org_name);
-            newOrg.setRoles(selectedRoles);
-            newOrg.setRights(organizationRightsList);
+                //first create the organization
+                List<NewOrganizationRequestModel.RoleData> orgRoleData = requestModel.getRoles();
+                for (NewOrganizationRequestModel.RoleData roleData: orgRoleData) {
+                    Optional<Role> optionalRole = roleRepository.findById(roleData.getRoleId());
+                    Role foundRole = optionalRole.orElseThrow(() -> new IllegalArgumentException("Role not found :: "
+                            +roleData.getRoleId() ));
 
-            organizationRepository.save(newOrg);
+                    selectedRoles.add(foundRole);
 
+                    //populate composite key table
+                    for(Long rightId : roleData.getRightIds()){
+                        Optional<Right> optionalRight = rightsRepository.findById(rightId);
+                        Right foundRight = optionalRight.orElseThrow(() -> new IllegalArgumentException("Right not found"));
+
+                        organizationRightsList.add(foundRight);
+
+                    }
+                }
+
+                newOrg.setOrganization_name(org_name);
+                newOrg.setRoles(selectedRoles);
+                newOrg.setRights(organizationRightsList);
+
+                organizationRepository.save(newOrg);
+
+            }
+            responseModel = new UserResponseModel(
+                    HttpStatus.OK.value(),
+                    "Organization created Successfully"
+            );
+        }catch(IllegalArgumentException e){
+            responseBody.put("error", e.getMessage());
+            responseModel = new UserResponseModel(
+                    HttpStatus.EXPECTATION_FAILED.value(),
+                    e.getMessage(),
+                    Optional.of(responseBody)
+            );
         }
+        return responseModel;
     }
 
     public Page<OrganizationRightsResponseModel> getAllOrganizations(int pageNumber,int pageSize){
@@ -219,28 +234,45 @@ public class SuperAdminService {
     /**
      * Function to add/ create a new role
      */
-    public void addNewRole(NewRoleRequestModel requestModel){
-        //check if role already exists
-        String role_name = requestModel.getRole_name();
-        Optional<Role> roleOptional = roleRepository.findByRoleName(role_name);
+    public UserResponseModel addNewRole(NewRoleRequestModel requestModel){
+        UserResponseModel responseModel;
+        Map<String, Object> responseBody = new HashMap<>();
+        try{
+            //check if role already exists
+            String role_name = requestModel.getRole_name();
+            Optional<Role> roleOptional = roleRepository.findByRoleName(role_name);
 
-        if(roleOptional.isPresent()){
-            throw new IllegalArgumentException("ROLE PROVIDED ALREADY EXISTS " + role_name);
-        }else{
-            Role newRole = new Role();
-            newRole.setRole_name(role_name);
+            if(roleOptional.isPresent()){
+                System.out.println("ROLES MATCH::" + requestModel.getRole_name() + "AND " + roleOptional.get().getRole_name());
+                throw new IllegalArgumentException("The role provided, "+ role_name+ ", already exists.");
+            }else{
+                Role newRole = new Role();
+                newRole.setRole_name(role_name);
 
-            for(String rightName : requestModel.getRole_rights()){
-                Right newRight = new Right();
-                newRight.setRight_name(rightName);
-                newRight.setRight_description("");
-                rightsRepository.save(newRight);
+                for(String rightName : requestModel.getRole_rights()){
+                    Right newRight = new Right();
+                    newRight.setRight_name(rightName);
+                    newRight.setRight_description("");
+                    rightsRepository.save(newRight);
 
-                newRole.getRights().add(newRight);
+                    newRole.getRights().add(newRight);
+                }
+                newRole.setRole_description("");
+                roleRepository.save(newRole);
             }
-            newRole.setRole_description("");
-            roleRepository.save(newRole);
+            responseModel = new UserResponseModel(
+                    HttpStatus.OK.value(),
+                    "Role created Successfully"
+            );
+        }catch(IllegalArgumentException e){
+            responseBody.put("error", e.getMessage());
+            responseModel = new UserResponseModel(
+                    HttpStatus.EXPECTATION_FAILED.value(),
+                    e.getMessage(),
+                    Optional.of(responseBody)
+            );
         }
+        return responseModel;
     }
 
     /**

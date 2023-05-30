@@ -12,7 +12,7 @@ import java.util.Optional;
 
 public interface RoleRepository extends JpaRepository<Role, Long> {
    @Query(value = "SELECT r FROM Role r " +
-           "WHERE r.role_name = :searchTerm"
+           "WHERE REPLACE(r.role_name, ' ', '') = REPLACE(:searchTerm, ' ', '')"
    )
    Optional<Role> findByRoleName(@Param("searchTerm")String role_name);
 

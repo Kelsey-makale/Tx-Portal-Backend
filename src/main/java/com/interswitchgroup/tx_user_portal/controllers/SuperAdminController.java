@@ -49,15 +49,15 @@ public class SuperAdminController {
     }
 
     @PostMapping("/organization/add")
-    public ResponseEntity<String> addOrganization(@RequestBody NewOrganizationRequestModel newOrganizationRequestModel){
-        superAdminService.addNewOrganization(newOrganizationRequestModel);
-        return new ResponseEntity<>("Organization added successfully", HttpStatus.OK);
+    public ResponseEntity<UserResponseModel> addOrganization(@RequestBody NewOrganizationRequestModel newOrganizationRequestModel){
+        UserResponseModel responseModel = superAdminService.addNewOrganization(newOrganizationRequestModel);
+        return new ResponseEntity<>(responseModel, HttpStatus.valueOf(responseModel.getStatus()));
     }
 
     @PostMapping("/roles/add")
-    public ResponseEntity<String> addRole(@RequestBody NewRoleRequestModel roleRequestModel){
-        superAdminService.addNewRole(roleRequestModel);
-        return new ResponseEntity<>("Role added successfully", HttpStatus.OK);
+    public ResponseEntity<UserResponseModel> addRole(@RequestBody NewRoleRequestModel roleRequestModel){
+        UserResponseModel responseModel = superAdminService.addNewRole(roleRequestModel);
+        return new ResponseEntity<>(responseModel,  HttpStatus.valueOf(responseModel.getStatus()));
     }
 
     @PostMapping("/users/add")
