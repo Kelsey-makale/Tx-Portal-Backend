@@ -120,12 +120,6 @@ public class GenericService {
         UserResponseModel responseModel;
         Map<String, Object> response = new HashMap<>();
         try {
-            authenticationManager.authenticate(
-                    new UsernamePasswordAuthenticationToken(
-                            userSignInRequestModel.getEmail_address(),
-                            userSignInRequestModel.getPassword()
-                    )
-            );
 
             Optional<User> userOptional = userRepository.findUserByEmailAddress(userSignInRequestModel.getEmail_address());
             User user = userOptional.orElseThrow(() -> new IllegalArgumentException("User not found with email: " + userSignInRequestModel.getEmail_address()));
@@ -141,6 +135,14 @@ public class GenericService {
                     throw new IllegalArgumentException("Please verify your email to proceed.");
                 }
             }
+
+            authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(
+                            userSignInRequestModel.getEmail_address(),
+                            userSignInRequestModel.getPassword()
+                    )
+            );
+
 
             //create jwt
             CreatedUser createdUser = new CreatedUser(
@@ -160,8 +162,15 @@ public class GenericService {
                     Optional.of(responseData)
             );
 
-        } catch (AuthenticationException | IllegalArgumentException e) {
+        } catch (IllegalArgumentException e) {
             response.put("error", e.getMessage());
+            responseModel = new UserResponseModel(
+                    HttpStatus.EXPECTATION_FAILED.value(),
+                    e.getMessage(),
+                    Optional.of(response)
+            );
+        }catch (AuthenticationException e) {
+            response.put("Error", e.getMessage());
             responseModel = new UserResponseModel(
                     HttpStatus.EXPECTATION_FAILED.value(),
                     e.getMessage(),
