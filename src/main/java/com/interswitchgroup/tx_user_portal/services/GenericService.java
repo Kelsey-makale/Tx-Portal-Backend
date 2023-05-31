@@ -185,7 +185,7 @@ public class GenericService {
             //perform update operation
             userVerification = userVerificationOptional.get();
             userVerification.setCreated_at(LocalDateTime.now());
-            userVerification.setExpires_at(LocalDateTime.now().plusMinutes(15));
+            userVerification.setExpires_at(LocalDateTime.now().plusMinutes(2));
             userVerification.setOtp_code(generatedOTP);
 
             //save OTP (with an expiry)
@@ -197,7 +197,7 @@ public class GenericService {
                     generatedOTP,
                     user,
                     LocalDateTime.now(),
-                    LocalDateTime.now().plusMinutes(15)// Set to expire in 15 min
+                    LocalDateTime.now().plusMinutes(2)// Set to expire in 15 min
             );
             //save OTP (with an expiry)
             userVerificationRepository.save(userVerification);
@@ -223,18 +223,31 @@ public class GenericService {
                 UserVerification userVerificationObj = userVerificationOptional.get();
 
                 if(userVerificationObj.getOtp_code().equals(userVerifyRequestModel.getVerification_code())){
-                    user.getUserDetails().setVerified(true);
-                    userRepository.save(user);
-                    responseModel = new UserResponseModel(
-                            HttpStatus.OK.value(),
-                            "User successfully verified."
-                    );
+
+                    //CHECK IF THE TOKEN HAS EXPIRED
+                    LocalDateTime timeNow = LocalDateTime.now();
+                    if(timeNow.isAfter(userVerificationObj.getExpires_at())){
+                        user.getUserDetails().setVerified(true);
+                        userRepository.save(user);
+                        responseModel = new UserResponseModel(
+                                HttpStatus.EXPECTATION_FAILED.value(),
+                                "The OTP provided has expired. Please click on resend code to generate a new OTP."
+                        );
+                    }
+                    else {
+                        user.getUserDetails().setVerified(true);
+                        userRepository.save(user);
+                        responseModel = new UserResponseModel(
+                                HttpStatus.OK.value(),
+                                "User successfully verified."
+                        );
+                    }
                 }
                 else{
                     response.put("error", "Invalid OTP");
                     responseModel = new UserResponseModel(
                             HttpStatus.EXPECTATION_FAILED.value(),
-                            "Failed to verify user.OTP is invalid.",
+                            "The OTP provided is invalid.",
                             Optional.of(response)
                     );
                 }
