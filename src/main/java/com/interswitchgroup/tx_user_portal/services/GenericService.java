@@ -133,7 +133,12 @@ public class GenericService {
             //check role.
             if(user.getPermission().equals(UserPermission.BANK_ADMIN)){
                 if(!user.getUserDetails().isVerified()){
-                    throw new IllegalArgumentException("Please reset your password to proceed");
+                    throw new IllegalArgumentException("Please reset your password to proceed.");
+                }
+            } else if (user.getPermission().equals(UserPermission.BANK_USER)) {
+                if(!user.getUserDetails().isVerified()){
+                    System.out.println("AM I VERIFIED:: "+user.getUserDetails().isVerified());
+                    throw new IllegalArgumentException("Please verify your email to proceed.");
                 }
             }
 
@@ -218,6 +223,8 @@ public class GenericService {
                 UserVerification userVerificationObj = userVerificationOptional.get();
 
                 if(userVerificationObj.getOtp_code().equals(userVerifyRequestModel.getVerification_code())){
+                    user.getUserDetails().setVerified(true);
+                    userRepository.save(user);
                     responseModel = new UserResponseModel(
                             HttpStatus.OK.value(),
                             "User successfully verified."
