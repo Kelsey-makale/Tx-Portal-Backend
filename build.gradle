@@ -25,7 +25,9 @@ dependencies {
 	implementation 'com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.14.2'
 	runtimeOnly 'com.mysql:mysql-connector-j'
 	implementation 'com.microsoft.sqlserver:mssql-jdbc:11.2.1.jre8'
+	implementation 'com.sun.mail:jakarta.mail:2.0.1'
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
+
 }
 
 jar{
