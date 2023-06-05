@@ -329,7 +329,7 @@ public class SuperAdminService {
 
             if (userOptional.isPresent()) {
                 System.out.println("USER ALREADY EXISTS");
-                throw new IllegalArgumentException("A user with this email already exists: " + userSignUpRequestModel.getEmail_address());
+                throw new IllegalArgumentException("A user with this email already exists");
             }
             if (organizationOptional.isEmpty()) {
                 throw new IllegalArgumentException("Organization not found: " + userSignUpRequestModel.getOrganization_id());
@@ -392,7 +392,7 @@ public class SuperAdminService {
             responseBody.put("error", e.getMessage());
             responseModel = new UserResponseModel(
                     HttpStatus.EXPECTATION_FAILED.value(),
-                    "Failed to register user",
+                    e.getMessage(),
                     Optional.of(responseBody)
             );
         }

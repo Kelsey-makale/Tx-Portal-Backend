@@ -62,8 +62,8 @@ public class SuperAdminController {
 
     @PostMapping("/users/add")
     public ResponseEntity<UserResponseModel> addUser(@RequestBody AdminSignUpRequestModel adminSignUpRequestModel){
-        superAdminService.createBankAdmin(adminSignUpRequestModel);
-        return new ResponseEntity<>( superAdminService.createBankAdmin(adminSignUpRequestModel), HttpStatus.OK);
+        UserResponseModel responseModel = superAdminService.createBankAdmin(adminSignUpRequestModel);
+        return new ResponseEntity<>( responseModel, HttpStatus.valueOf(responseModel.getStatus()));
     }
 
     @GetMapping("/logs")
