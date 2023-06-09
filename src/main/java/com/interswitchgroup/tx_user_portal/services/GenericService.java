@@ -148,6 +148,13 @@ public class GenericService {
                     );
 
                 }
+            }else{
+                authenticationManager.authenticate(
+                        new UsernamePasswordAuthenticationToken(
+                                userSignInRequestModel.getEmail_address(),
+                                userSignInRequestModel.getPassword()
+                        )
+                );
             }
 
             //create jwt
