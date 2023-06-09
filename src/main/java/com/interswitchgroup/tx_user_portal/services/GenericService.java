@@ -188,6 +188,29 @@ public class GenericService {
         return responseModel;
     }
 
+    public UserResponseModel checkEmail(ResendOTPRequestModel emailRequestModel){
+        UserResponseModel responseModel;
+        Map<String, Object> responseBody = new HashMap<>();
+        try {
+            Optional<User> userOptional = userRepository.findUserByEmailAddress(emailRequestModel.getEmail_address());
+            if (userOptional.isPresent()) {
+                throw new IllegalArgumentException("A user with this email already exists.");
+            }
+            responseModel = new UserResponseModel(
+                    HttpStatus.OK.value(),
+                    "User registered Successfully"
+            );
+        }catch(IllegalArgumentException e){
+            responseBody.put("error", e.getMessage());
+            responseModel = new UserResponseModel(
+                    HttpStatus.EXPECTATION_FAILED.value(),
+                    e.getMessage(),
+                    Optional.of(responseBody)
+            );
+        }
+        return responseModel;
+    }
+
     public void generateOTP(User user){
         Optional<UserVerification> userVerificationOptional = userVerificationRepository.findUserVerificationByUserUserId(user.getUser_id());
 

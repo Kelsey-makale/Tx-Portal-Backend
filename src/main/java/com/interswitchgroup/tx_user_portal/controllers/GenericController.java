@@ -69,5 +69,12 @@ public class GenericController {
         return new ResponseEntity<>(genericService.getOrganizationData(), HttpStatus.OK);
     }
 
+    @PostMapping("/checkEmail")
+    public ResponseEntity<UserResponseModel> checkEmail(@RequestBody ResendOTPRequestModel resendOTPRequestModel){
+        UserResponseModel responseModel = genericService.checkEmail(resendOTPRequestModel);
+        return new ResponseEntity<>(responseModel, HttpStatus.valueOf(responseModel.getStatus()));
+    }
+
+
 
 }
