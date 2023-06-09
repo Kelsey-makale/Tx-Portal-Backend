@@ -126,6 +126,12 @@ public class GenericService {
 
             //check role.
             if(user.getPermission().equals(UserPermission.BANK_ADMIN)){
+                authenticationManager.authenticate(
+                        new UsernamePasswordAuthenticationToken(
+                                userSignInRequestModel.getEmail_address(),
+                                userSignInRequestModel.getPassword()
+                        )
+                );
                 if(!user.getUserDetails().isVerified()){
                     throw new IllegalArgumentException("Please reset your password to proceed.");
                 }
@@ -133,16 +139,16 @@ public class GenericService {
                 if(!user.getUserDetails().isVerified()){
                     System.out.println("AM I VERIFIED:: "+user.getUserDetails().isVerified());
                     throw new IllegalArgumentException("Please verify your email to proceed.");
+                }else{
+                    authenticationManager.authenticate(
+                            new UsernamePasswordAuthenticationToken(
+                                    userSignInRequestModel.getEmail_address(),
+                                    userSignInRequestModel.getPassword()
+                            )
+                    );
+
                 }
             }
-
-            authenticationManager.authenticate(
-                    new UsernamePasswordAuthenticationToken(
-                            userSignInRequestModel.getEmail_address(),
-                            userSignInRequestModel.getPassword()
-                    )
-            );
-
 
             //create jwt
             CreatedUser createdUser = new CreatedUser(
