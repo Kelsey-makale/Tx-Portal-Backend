@@ -37,6 +37,7 @@ public class EmailService {
 
     @Async
     public void sendMailWithCC(String to, String subject, String body, String[] cc){
+        /*
         try{
             MimeMessage msg = mailSender.createMimeMessage();
             msg.setFrom("sianwamak@gmail.com");
@@ -52,5 +53,8 @@ public class EmailService {
             throw new IllegalStateException("Failed to send email");
         }
 
+         */
+
     }
+
 }
