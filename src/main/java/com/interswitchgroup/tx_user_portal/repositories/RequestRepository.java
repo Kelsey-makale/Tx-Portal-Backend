@@ -25,6 +25,85 @@ public interface RequestRepository  extends JpaRepository<Request, Long>, JpaSpe
             "WHERE r.requestId =:request_id")
     void deleteRequestById(@Param("request_id")long request_id);
 
+
+    @Query(value = "SELECT r FROM Request r " +
+            "JOIN FETCH r.user u " +
+            "JOIN u.userDetails ud " +
+            "LEFT JOIN FETCH r.roles rl " +
+            "WHERE r.requestStatus = 'CLOSED' " +
+            "OR(r.requestStatus = 'REJECTED')",
+            countQuery =  "SELECT r FROM Request r " +
+                    "JOIN FETCH r.user u " +
+                    "JOIN u.userDetails ud " +
+                    "LEFT JOIN FETCH r.roles rl " +
+                    "WHERE r.requestStatus = 'APPROVED' " +
+                    "OR(r.requestStatus = 'REJECTED')")
+    Page<Request> getAllRequests(Pageable pageable);
+
+    @Query(value = "SELECT r FROM Request r " +
+            "JOIN FETCH r.user u " +
+            "JOIN u.userDetails ud " +
+            "LEFT JOIN FETCH r.roles rl " +
+            "WHERE r.requestStatus = 'CLOSED' " +
+            "AND(r.requestStatus = 'REJECTED' " +
+            "OR u.emailAddress LIKE %:searchTerm% " +
+            "OR ud.firstName LIKE %:searchTerm% " +
+            "OR ud.secondName LIKE %:searchTerm% " +
+            "OR rl.role_name LIKE %:searchTerm%)",
+            countQuery =  "SELECT r FROM Request r " +
+                    "JOIN FETCH r.user u " +
+                    "JOIN u.userDetails ud " +
+                    "LEFT JOIN FETCH r.roles rl " +
+                    "WHERE r.requestStatus = 'CLOSED' " +
+                    "AND(r.requestStatus = 'REJECTED' " +
+                    "OR u.emailAddress LIKE %:searchTerm% " +
+                    "OR ud.firstName LIKE %:searchTerm% " +
+                    "OR ud.secondName LIKE %:searchTerm% " +
+                    "OR rl.role_name LIKE %:searchTerm%)")
+    Page<Request> searchAllRequests(@Param("searchTerm")String searchTerm, Pageable pageable);
+
+    @Query(value = "SELECT r FROM Request r " +
+            "JOIN FETCH r.user u " +
+            "JOIN u.userDetails ud " +
+            "LEFT JOIN FETCH r.roles rl " +
+            "WHERE r.organizationId = :orgId " +
+            "AND (r.requestStatus = 'REJECTED' " +
+            "OR r.requestStatus = 'CLOSED' " +
+            "OR r.requestStatus = 'APPROVED')",
+            countQuery =  "SELECT r FROM Request r " +
+                    "JOIN FETCH r.user u " +
+                    "JOIN u.userDetails ud " +
+                    "LEFT JOIN FETCH r.roles rl " +
+                    "WHERE r.organizationId = :orgId " +
+                    "AND (r.requestStatus = 'REJECTED' " +
+                    "OR r.requestStatus = 'APPROVED')")
+    Page<Request> getAllOrganizationRequests(@Param("orgId") long orgId,  Pageable pageable);
+
+    @Query(value = "SELECT r FROM Request r " +
+            "JOIN FETCH r.user u " +
+            "JOIN u.userDetails ud " +
+            "LEFT JOIN FETCH r.roles rl " +
+            "WHERE r.organizationId = :orgId " +
+            "AND (r.requestStatus = 'REJECTED' " +
+            "OR r.requestStatus = 'APPROVED' " +
+            "OR u.emailAddress LIKE %:searchTerm% " +
+            "OR ud.firstName LIKE %:searchTerm% " +
+            "OR ud.secondName LIKE %:searchTerm% " +
+            "OR rl.role_name LIKE %:searchTerm%)",
+            countQuery =  "SELECT r FROM Request r " +
+                    "JOIN FETCH r.user u " +
+                    "JOIN u.userDetails ud " +
+                    "LEFT JOIN FETCH r.roles rl " +
+                    "WHERE r.organizationId = :orgId " +
+                    "AND (r.requestStatus = 'REJECTED' " +
+                    "OR r.requestStatus = 'APPROVED' " +
+                    "OR u.emailAddress LIKE %:searchTerm% " +
+                    "OR ud.firstName LIKE %:searchTerm% " +
+                    "OR ud.secondName LIKE %:searchTerm% " +
+                    "OR rl.role_name LIKE %:searchTerm%)")
+    Page<Request> searchAllOrganizationRequests(@Param("orgId") long orgId,@Param("searchTerm")String searchTerm, Pageable pageable);
+
+
     @Query(value = "SELECT r FROM Request r " +
             "JOIN FETCH r.user u " +
             "JOIN u.userDetails ud " +

@@ -29,6 +29,18 @@ public class AdminController {
         this.adminService = adminService;
     }
 
+    @GetMapping("/requests")
+    public ResponseEntity<Page<Request>> getAllRequests(@RequestParam(defaultValue = "0") int pageNumber, @RequestParam(defaultValue = "10") int pageSize){
+        Page<Request> allRequests = adminService.getAllRequests(pageNumber, pageSize);
+        return new ResponseEntity<>(allRequests, HttpStatus.OK);
+    }
+
+    @GetMapping("/search/requests")
+    public ResponseEntity<Page<Request>> fuzzySearchRequest(@RequestParam String searchTerm, @RequestParam(defaultValue = "0") int pageNumber, @RequestParam(defaultValue = "10") int pageSize){
+        return new ResponseEntity<>(adminService.requestsFuzzySearch(searchTerm, pageNumber, pageSize), HttpStatus.OK);
+    }
+
+
     @PutMapping("/users/update-status/{user_id}/{account_status}")
     public ResponseEntity<String> updateUserAccount(@PathVariable long user_id, @PathVariable String account_status){
         adminService.UpdateUserAccountStatus(user_id, account_status);
@@ -78,9 +90,9 @@ public class AdminController {
         return new ResponseEntity<>(allUsers, HttpStatus.OK);
     }
 
-    @GetMapping("/search/requests")
-    public ResponseEntity<Page<Request>> fuzzySearchRequest(@RequestParam String searchTerm, @RequestParam(defaultValue = "0") int pageNumber, @RequestParam(defaultValue = "10") int pageSize){
-        return new ResponseEntity<>(adminService.requestsFuzzySearch(searchTerm, pageNumber, pageSize), HttpStatus.OK);
+    @GetMapping("/search/pending-requests")
+    public ResponseEntity<Page<Request>> fuzzySearchPendingRequest(@RequestParam String searchTerm, @RequestParam(defaultValue = "0") int pageNumber, @RequestParam(defaultValue = "10") int pageSize){
+        return new ResponseEntity<>(adminService.pendingRequestsFuzzySearch(searchTerm, pageNumber, pageSize), HttpStatus.OK);
     }
 
     @PostMapping("/create-password")
