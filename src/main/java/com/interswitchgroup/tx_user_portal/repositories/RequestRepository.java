@@ -45,8 +45,8 @@ public interface RequestRepository  extends JpaRepository<Request, Long>, JpaSpe
             "JOIN u.userDetails ud " +
             "LEFT JOIN FETCH r.roles rl " +
             "WHERE r.requestStatus = 'CLOSED' " +
-            "AND(r.requestStatus = 'REJECTED' " +
-            "OR u.emailAddress LIKE %:searchTerm% " +
+            "OR r.requestStatus = 'REJECTED' " +
+            "AND(u.emailAddress LIKE %:searchTerm% " +
             "OR ud.firstName LIKE %:searchTerm% " +
             "OR ud.secondName LIKE %:searchTerm% " +
             "OR rl.role_name LIKE %:searchTerm%)",
@@ -55,8 +55,8 @@ public interface RequestRepository  extends JpaRepository<Request, Long>, JpaSpe
                     "JOIN u.userDetails ud " +
                     "LEFT JOIN FETCH r.roles rl " +
                     "WHERE r.requestStatus = 'CLOSED' " +
-                    "AND(r.requestStatus = 'REJECTED' " +
-                    "OR u.emailAddress LIKE %:searchTerm% " +
+                    "OR r.requestStatus = 'REJECTED' " +
+                    "AND(u.emailAddress LIKE %:searchTerm% " +
                     "OR ud.firstName LIKE %:searchTerm% " +
                     "OR ud.secondName LIKE %:searchTerm% " +
                     "OR rl.role_name LIKE %:searchTerm%)")
@@ -85,8 +85,8 @@ public interface RequestRepository  extends JpaRepository<Request, Long>, JpaSpe
             "LEFT JOIN FETCH r.roles rl " +
             "WHERE r.organizationId = :orgId " +
             "AND (r.requestStatus = 'REJECTED' " +
-            "OR r.requestStatus = 'APPROVED' " +
-            "OR u.emailAddress LIKE %:searchTerm% " +
+            "OR r.requestStatus = 'APPROVED') " +
+            "AND(u.emailAddress LIKE %:searchTerm% " +
             "OR ud.firstName LIKE %:searchTerm% " +
             "OR ud.secondName LIKE %:searchTerm% " +
             "OR rl.role_name LIKE %:searchTerm%)",
@@ -96,8 +96,8 @@ public interface RequestRepository  extends JpaRepository<Request, Long>, JpaSpe
                     "LEFT JOIN FETCH r.roles rl " +
                     "WHERE r.organizationId = :orgId " +
                     "AND (r.requestStatus = 'REJECTED' " +
-                    "OR r.requestStatus = 'APPROVED' " +
-                    "OR u.emailAddress LIKE %:searchTerm% " +
+                    "OR r.requestStatus = 'APPROVED') " +
+                    "AND(u.emailAddress LIKE %:searchTerm% " +
                     "OR ud.firstName LIKE %:searchTerm% " +
                     "OR ud.secondName LIKE %:searchTerm% " +
                     "OR rl.role_name LIKE %:searchTerm%)")
