@@ -46,6 +46,9 @@ public class AdminService {
         this.userVerificationRepository = userVerificationRepository;
     }
 
+
+
+
     /**
      * Function to fetch all pending requests
      * If user is an BANK ADMIN
@@ -79,6 +82,32 @@ public class AdminService {
             e.printStackTrace();
             return null;
         }
+    }
+
+    public Page<Request> requestsFuzzySearch(String searchTerm, int pageNumber, int pageSize){
+        try {
+            User currentAdmin = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+            String user_permission = String.valueOf(currentAdmin.getPermission());
+
+            if(user_permission.equals("ADMIN") ){
+                Pageable pageable = PageRequest.of(pageNumber, pageSize);
+                return requestRepository.searchAllRequests(searchTerm, pageable);
+            }
+            else if (user_permission.equals("BANK_ADMIN")) {
+                long org_id = currentAdmin.getUserDetails().getOrganization().getOrganization_id();
+                Pageable pageable = PageRequest.of(pageNumber, pageSize);
+                return requestRepository.searchAllOrganizationRequests(org_id, searchTerm, pageable);
+            }
+            else{
+                throw new IllegalArgumentException("User is not authorized to make this request");
+            }
+
+        }
+        catch(Exception e){
+            e.printStackTrace();
+            return null;
+        }
+
     }
 
     /**
@@ -495,7 +524,7 @@ public class AdminService {
     }
 
 
-    public Page<Request> requestsFuzzySearch(String searchTerm, int pageNumber, int pageSize){
+    public Page<Request> pendingRequestsFuzzySearch(String searchTerm, int pageNumber, int pageSize){
         try {
             User currentAdmin = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
             String user_permission = String.valueOf(currentAdmin.getPermission());
@@ -577,6 +606,32 @@ public class AdminService {
         }
 
         return responseModel;
+    }
+
+
+    public Page<Request> getAllRequests(int pageNumber, int pageSize){
+        try {
+            User currentAdmin = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+            String user_permission = String.valueOf(currentAdmin.getPermission());
+
+            if(user_permission.equals("ADMIN") ){
+                Pageable pageable = PageRequest.of(pageNumber, pageSize);
+                return requestRepository.getAllRequests(pageable);
+            }
+            else if (user_permission.equals("BANK_ADMIN")) {
+                long org_id = currentAdmin.getUserDetails().getOrganization().getOrganization_id();
+                Pageable pageable = PageRequest.of(pageNumber, pageSize);
+                return requestRepository.getAllOrganizationRequests(org_id,pageable);
+            }
+            else{
+                throw new IllegalArgumentException("User is not authorized to make this request");
+            }
+
+        }
+        catch(Exception e){
+            e.printStackTrace();
+            return null;
+        }
     }
 
 }

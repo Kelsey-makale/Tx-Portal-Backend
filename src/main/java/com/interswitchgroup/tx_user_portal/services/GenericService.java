@@ -272,8 +272,6 @@ public class GenericService {
                     //CHECK IF THE TOKEN HAS EXPIRED
                     LocalDateTime timeNow = LocalDateTime.now();
                     if(timeNow.isAfter(userVerificationObj.getExpires_at())){
-                        user.getUserDetails().setVerified(true);
-                        userRepository.save(user);
                         responseModel = new UserResponseModel(
                                 HttpStatus.EXPECTATION_FAILED.value(),
                                 "The OTP provided has expired. Please click on resend code to generate a new OTP."
@@ -307,6 +305,62 @@ public class GenericService {
             responseModel = new UserResponseModel(
                     HttpStatus.EXPECTATION_FAILED.value(),
                     "Failed to register user",
+                    Optional.of(response)
+            );
+        }
+
+        return responseModel;
+
+    }
+
+    public UserResponseModel confirmOTP(UserVerifyRequestModel userVerifyRequestModel){
+        UserResponseModel responseModel;
+        Map<String, Object> response = new HashMap<>();
+
+        try{
+            Optional<User> userOptional = userRepository.findUserByEmailAddress(userVerifyRequestModel.getEmail_address());
+            User user = userOptional.orElseThrow(() -> new IllegalArgumentException("User not found with email: " + userVerifyRequestModel.getEmail_address()));
+            Optional<UserVerification> userVerificationOptional = userVerificationRepository.findUserVerificationByUserUserId(user.getUser_id());
+
+            if(userVerificationOptional.isPresent()){
+                UserVerification userVerificationObj = userVerificationOptional.get();
+
+                if(userVerificationObj.getOtp_code().equals(userVerifyRequestModel.getVerification_code())){
+
+                    //CHECK IF THE TOKEN HAS EXPIRED
+                    LocalDateTime timeNow = LocalDateTime.now();
+                    if(timeNow.isAfter(userVerificationObj.getExpires_at())){
+                        responseModel = new UserResponseModel(
+                                HttpStatus.EXPECTATION_FAILED.value(),
+                                "The OTP provided has expired. Please click on resend code to generate a new OTP."
+                        );
+                    }
+                    else {
+                        responseModel = new UserResponseModel(
+                                HttpStatus.OK.value(),
+                                "User successfully verified."
+                        );
+                    }
+                }
+                else{
+                    response.put("error", "Invalid OTP");
+                    responseModel = new UserResponseModel(
+                            HttpStatus.EXPECTATION_FAILED.value(),
+                            "The OTP provided is invalid.",
+                            Optional.of(response)
+                    );
+                }
+            }
+            else{
+                //return record does not exist
+                throw new IllegalArgumentException("Record does not exist. User needs to sign up first.");
+            }
+        }
+        catch(IllegalArgumentException e){
+            response.put("error", e.getMessage());
+            responseModel = new UserResponseModel(
+                    HttpStatus.EXPECTATION_FAILED.value(),
+                    e.getMessage(),
                     Optional.of(response)
             );
         }

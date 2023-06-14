@@ -1,5 +1,6 @@
 package com.interswitchgroup.tx_user_portal.services;
 
+import jakarta.mail.internet.InternetAddress;
 import jakarta.mail.internet.MimeMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -37,23 +38,35 @@ public class EmailService {
 
     @Async
     public void sendMailWithCC(String to, String subject, String body, String[] cc){
-        /*
+
         try{
             MimeMessage msg = mailSender.createMimeMessage();
+            InternetAddress[] ccAddress = new InternetAddress[cc.length];
+
+            // To get the array of ccaddresses
+            for( int i = 0; i < cc.length; i++ ) {
+                ccAddress[i] = new InternetAddress(cc[i]);
+            }
+
+            // Set cc: header field of the header.
+            for(InternetAddress address : ccAddress) {
+                msg.addRecipient(MimeMessage.RecipientType.CC, address);
+            }
+
             msg.setFrom("sianwamak@gmail.com");
             msg.setRecipients(MimeMessage.RecipientType.TO,to);
-            msg.setRecipients(MimeMessage.RecipientType.CC, Arrays.toString(cc));
             msg.setSubject(subject);
             msg.setText(body, "utf-8", "html");
 
             mailSender.send(msg);
 
         }catch(Exception e){
+            e.printStackTrace();
             LOGGER.error("Failed to send email", e);
             throw new IllegalStateException("Failed to send email");
         }
 
-         */
+
 
     }
 

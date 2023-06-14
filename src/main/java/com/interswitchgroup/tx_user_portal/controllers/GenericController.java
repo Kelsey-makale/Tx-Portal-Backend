@@ -50,6 +50,12 @@ public class GenericController {
         return new ResponseEntity<>(resp, HttpStatusCode.valueOf(resp.getStatus()));
     }
 
+    @PostMapping("/confirm-otp")
+    public ResponseEntity<UserResponseModel> confirmOTP(@RequestBody UserVerifyRequestModel userVerifyRequestModel){
+        UserResponseModel responseModel = genericService.confirmOTP(userVerifyRequestModel);
+        return new ResponseEntity<>(responseModel, HttpStatus.valueOf(responseModel.getStatus()));
+    }
+
     @PostMapping("/verify")
     public ResponseEntity<UserResponseModel> verifyEmail(@RequestBody UserVerifyRequestModel userVerifyRequestModel){
         UserResponseModel responseModel = genericService.verifyEmail(userVerifyRequestModel);
